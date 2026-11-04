@@ -1,0 +1,20 @@
+{
+  "name": "juanjojaikel",
+  "owner": {
+    "name": "Juanjo Jaikel"
+  },
+  "metadata": {
+    "description": "Skills de Juanjo Jaikel para Claude Code: planificar un proyecto desde cero hasta un producto terminado.",
+    "version": "1.0.0"
+  },
+  "plugins": [
+    {
+      "name": "planificar-proyecto",
+      "source": "./",
+      "description": "Lleva una idea de app o producto digital desde cero hasta un plan completo y una carpeta de proyecto lista para construir con Claude Code: entrevista, investigación con agentes, Consejo de 5 asesores, visión del producto, hoja de ruta, fichas, /guardar y GitHub.",
+      "version": "1.0.0",
+      "category": "productivity",
+      "keywords": ["planeacion", "proyecto", "app", "saas", "hoja de ruta", "idea", "mvp"]
+    }
+  ]
+}

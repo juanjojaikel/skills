@@ -1,0 +1,386 @@
+{
+  "version": "base",
+  "proyecto": "<<Nombre del proyecto>>",
+  "fuente": "Plantilla base de planificar-proyecto. Se adapta a cada proyecto desde vision-producto.html; nunca se copia tal cual.",
+  "personas": [],
+  "carpeta_codigo": "14. Codigo",
+  "ciclo_modulo": [
+    "PRD del módulo con preguntas numeradas y respuesta recomendada (estilo grilling), por rondas, hasta que no quede nada supuesto; la persona responde de una vez y aprueba el PRD antes de que se escriba código",
+    "Análisis de ataques del módulo (momento 1 de seguridad)",
+    "Pruebas escritas antes del código",
+    "Construcción (ventana A, constructora)",
+    "Revisión (ventana B, revisora: no escribe código, solo juzga; abre la app como un usuario y devuelve lo que falla; máx. 3 rondas)",
+    "Auditoría de seguridad + limpieza de código (momento 2)",
+    "SOP de uso del módulo (una pregunta por SOP, pasos literales y pantallazos de la app con datos inventados) en la carpeta de SOPs de Operación; sin él el módulo no se cierra",
+    "/guardar y subida a GitHub"
+  ],
+  "ciclo_no_codigo": [
+    "Plan corto y OK (si hay decisiones abiertas, preguntas numeradas con respuesta recomendada)",
+    "Ejecutar",
+    "Verificar (lo que no se verificó es pendiente, no hecho)",
+    "/guardar y subida a GitHub"
+  ],
+  "guion_de_arranque": [
+    "Dónde vamos (máx. 3 líneas): qué se hizo la última vez, qué quedó a medias, siguiente paso",
+    "Por qué importa esta etapa, para alguien que no sabe nada de IA, apps ni programar: qué se construye, qué pasa si se salta y qué se tiene al terminar",
+    "Esta subetapa: objetivo, qué se entrega, terminada cuando",
+    "Skills de esta subetapa, cada una con su enlace exacto (nombre — https://…) y una línea de qué problema resuelve aquí y cómo se usa",
+    "Pasos a seguir, en orden: lo que Claude necesita de la persona (preguntas numeradas con respuesta recomendada), lo que Claude hace solo, qué valida la persona al final y cómo",
+    "Cómo se va a trabajar (los pasos del ciclo que aplican)"
+  ],
+  "etapas": [
+    {
+      "n": "00",
+      "carpeta": "00. Planeacion",
+      "titulo": "Planeación",
+      "objetivo": "Saber qué se construye y por qué. Es referencia: la visión del producto y la hoja de ruta mandan.",
+      "por_que": "Sin un plan escrito, cada chat empieza de cero y el producto cambia de rumbo cada semana. Aquí quedó decidido qué se construye, para quién y en qué orden, con la investigación que lo respalda; todo lo demás se apoya en esto.",
+      "entra": "Hecha. Queda como referencia.",
+      "terminada": "Visión y hoja de ruta aprobadas. Cumplido al crear la estructura del proyecto.",
+      "como": ["Ya hecha. No se vuelve a planear: se consulta. Si una prueba de concepto cambia la visión, el cambio se escribe aquí con su decisión en DECISIONES.md."],
+      "subetapas": [
+        {"carpeta": "01-entrevista", "titulo": "Entrevista", "descripcion": "Las respuestas de la persona (quién es, la idea, para quién, país, cómo gana plata, equipo, qué existe, tiempo y dinero) y las decisiones de la segunda ronda. Fuente de lo que la persona quiere.", "entra": "—"},
+        {"carpeta": "02-investigacion", "titulo": "Investigación", "descripcion": "Un reporte por lente (competencia y precios, conversación real, disposición a pagar, tamaño, legal, pagos, fracasos) con cada cifra con URL y fecha, y la verificación adversarial de las afirmaciones decisivas. Consulta.", "entra": "Después de la entrevista"},
+        {"carpeta": "03-arquitectura", "titulo": "Arquitectura", "descripcion": "Las opciones técnicas con costo, qué exige saber y la recomendación para esta persona; lo que las etapas de base técnica reutilizan.", "entra": "Después de la investigación"},
+        {"carpeta": "04-consejo", "titulo": "Consejo", "descripcion": "El acta del Consejo de 5 asesores: cinco voces opuestas, revisión anónima y el veredicto del Presidente. Es consejo; lo aceptado y lo rechazado está en DECISIONES.md.", "entra": "Después de la investigación"},
+        {"carpeta": "05-nombre-y-marca", "titulo": "Nombre y marca", "descripcion": "El nombre decidido y, si se buscó, las opciones con dominio y marca libres. Logo, paleta y tono se trabajan en la etapa de diseño.", "entra": "—"},
+        {"carpeta": "06-herramientas-claude-code", "titulo": "Herramientas de Claude Code", "descripcion": "El catálogo de skills y repositorios con su URL exacta, comprobada en GitHub. Toda ficha cita skills de aquí.", "entra": "—"},
+        {"carpeta": "07-vision-producto", "titulo": "Visión del producto", "descripcion": "vision-producto.html (fuente de verdad del producto), hoja-de-ruta.json y hoja-de-ruta.html (la estructura de etapas).", "entra": "Después del Consejo"}
+      ],
+      "skills": [
+        {"nombre": "grilling (mattpocock/skills)", "url": "https://github.com/mattpocock/skills/tree/main/skills/productivity/grilling"},
+        {"nombre": "doc-coauthoring", "url": "https://github.com/anthropics/skills/tree/main/skills/doc-coauthoring"},
+        {"nombre": "competitor-profiling", "url": "https://github.com/coreyhaines31/marketingskills/tree/main/skills/competitor-profiling"},
+        {"nombre": "customer-research", "url": "https://github.com/coreyhaines31/marketingskills/tree/main/skills/customer-research"},
+        {"nombre": "claude-deep-research-skill", "url": "https://github.com/199-biotechnologies/claude-deep-research-skill"},
+        {"nombre": "find-skills", "url": "https://github.com/vercel-labs/skills/tree/main/skills/find-skills"}
+      ]
+    },
+    {
+      "n": "01",
+      "carpeta": "01. Fundacion",
+      "titulo": "Fundación",
+      "objetivo": "Cuentas, dominio, acuerdo entre socios y entornos listos para construir.",
+      "por_que": "Antes de construir una casa hay que tener el terreno, los permisos y la luz. Aquí se abren las cuentas (sin exponer contraseñas), se compra el dominio, se firma el acuerdo entre socios y se prepara el lugar donde vivirá el código con pruebas automáticas desde el primer día. Saltarlo es construir sobre cuentas prestadas y sin red de seguridad.",
+      "entra": "Ya: no depende de nada.",
+      "terminada": "Un «hola» publicado en el entorno de pruebas desde el repositorio, con las pruebas automáticas en verde (si el producto no lleva código: las cuentas, el dominio y el acuerdo registrados).",
+      "como": [
+        "Claude prepara cada cuenta paso a paso; la persona hace lo que exige su firma, contraseña o tarjeta.",
+        "El repositorio nace con las reglas de seguridad: versiones fijadas, secretos fuera del código, pruebas en cada push."
+      ],
+      "subetapas": [
+        {"carpeta": "01-cuentas-y-accesos", "titulo": "Cuentas y accesos", "descripcion": "Las cuentas que el proyecto necesita (GitHub con verificación en dos pasos, proveedor de nube, pasarela de pagos, correo transaccional, consolas de inicio de sesión) abiertas o confirmadas, y su registro sin secretos: quién la abrió, cuándo, con qué correo, dónde vive el secreto.", "entra": "Ya"},
+        {"carpeta": "02-dominio-y-marca", "titulo": "Dominio y marca", "descripcion": "Revisión de marcas registradas por escrito (registro del país y, si vende fuera, USPTO/EUIPO), dominio comprado y usuario asegurado en las redes que importan.", "entra": "Ya: el nombre está decidido"},
+        {"carpeta": "03-sociedad", "titulo": "Sociedad", "descripcion": "La página entre socios (quién es dueño de qué, reparto, horas, plata, quién decide, salida, conflicto de interés), firmada por todos. Solo si hay socios; conviene antes de que exista código.", "entra": "Ya"},
+        {"carpeta": "04-entornos", "titulo": "Entornos", "descripcion": "El código dentro del mismo repositorio, con la estructura del camino técnico elegido; dos entornos (develop → pruebas, main → producción); pruebas automáticas en cada push; secretos solo en el almacén del proveedor; hooks que bloquean el «ya terminé» sin pruebas; y el «hola» publicado en pruebas.", "entra": "Cuentas (01) y dominio (02) listos"}
+      ],
+      "skills": [
+        {"nombre": "gh-cli", "url": "https://github.com/trailofbits/skills/tree/main/plugins/gh-cli/skills/gh-cli"},
+        {"nombre": "gitleaks", "url": "https://github.com/gitleaks/gitleaks"},
+        {"nombre": "protect-secrets (claude-code-hooks)", "url": "https://github.com/karanb192/claude-code-hooks/tree/main/plugins/protect-secrets"},
+        {"nombre": "grilling (mattpocock/skills)", "url": "https://github.com/mattpocock/skills/tree/main/skills/productivity/grilling"},
+        {"nombre": "doc-coauthoring", "url": "https://github.com/anthropics/skills/tree/main/skills/doc-coauthoring"},
+        {"nombre": "claude-code-security-review (GitHub Action)", "url": "https://github.com/anthropics/claude-code-security-review"}
+      ]
+    },
+    {
+      "n": "02",
+      "carpeta": "02. Pruebas de concepto",
+      "titulo": "Pruebas de concepto",
+      "objetivo": "Confirmar, antes de diseñar, que lo más incierto del MVP se puede hacer. Cada prueba termina con un veredicto: sí, no o plan B.",
+      "por_que": "Hay cosas del producto que nadie sabe si se pueden hacer (una integración, un permiso de una plataforma, un medio de pago, una ley). Se prueban antes de diseñar una sola pantalla; si algo no se puede, se cambia el plan ahora y no después de meses de trabajo.",
+      "entra": "Cuando existan las cuentas que cada prueba necesita (01/01). Las pruebas que no dependen de cuentas pueden empezar antes.",
+      "terminada": "Cada riesgo de la visión (§14) con veredicto escrito y la visión del producto actualizada.",
+      "como": [
+        "Una subetapa por cada «lo que hay que verificar» de la visión del producto (§14); se generan al adaptar esta hoja de ruta.",
+        "Cada prueba es pequeña, de un chat, y termina con un veredicto escrito: sí, no o plan B.",
+        "Si algo no se puede, se ajusta la visión del producto antes de diseñar pantallas."
+      ],
+      "subetapas": [
+        {"carpeta": "01-riesgo-por-definir", "titulo": "<<Riesgo 1 de la visión §14>>", "descripcion": "<<qué se prueba, cómo, con qué datos inventados, y qué cambia si falla>>", "entra": "<<qué cuenta o acceso necesita>>"}
+      ],
+      "skills": [
+        {"nombre": "brainstorming (superpowers)", "url": "https://github.com/obra/superpowers/tree/main/skills/brainstorming"},
+        {"nombre": "systematic-debugging (superpowers)", "url": "https://github.com/obra/superpowers/tree/main/skills/systematic-debugging"},
+        {"nombre": "Context7", "url": "https://github.com/upstash/context7"},
+        {"nombre": "webhook-skills (Hookdeck)", "url": "https://github.com/hookdeck/webhook-skills"},
+        {"nombre": "grilling (mattpocock/skills)", "url": "https://github.com/mattpocock/skills/tree/main/skills/productivity/grilling"}
+      ]
+    },
+    {
+      "n": "03",
+      "carpeta": "03. Diseno UX-UI",
+      "titulo": "Diseño UX/UI",
+      "objetivo": "Todas las pantallas del MVP diseñadas y aprobadas antes de programar.",
+      "por_que": "Una app hecha con IA se nota a la primera: botones en cualquier lugar, emojis, colores sin criterio. Aquí se diseña todo antes de programar, con reglas de espaciado, color, íconos y tipografía, para que parezca hecha por un equipo profesional y para que no haya que rehacer pantallas después.",
+      "entra": "Cuando los veredictos de la etapa 02 estén escritos.",
+      "terminada": "Prototipo clicable aprobado por la persona (y sus socios si los hay).",
+      "como": [
+        "Se parte de una referencia real del nicho (la app que el cliente ya conoce): se copia la experiencia, nunca la marca ni los textos.",
+        "Cada pantalla se prueba en celular y en computadora.",
+        "Las palabras de las pantallas son las del cliente (lente «conversación real»), no las del programador."
+      ],
+      "subetapas": [
+        {"carpeta": "01-referencias", "titulo": "Referencias", "descripcion": "Inventario de pantallas, navegación y patrones de dos o tres productos de referencia del nicho. Se copia la experiencia, no la marca.", "entra": "Ya"},
+        {"carpeta": "02-sistema-de-diseno", "titulo": "Sistema de diseño", "descripcion": "Identidad visual (logo, colores, tipografía; la aprueba la persona) y el sistema de diseño: espaciado, componentes, estados, accesibilidad (contraste), y cómo cambia con la marca de cada cliente si hay marca propia.", "entra": "Después de las referencias"},
+        {"carpeta": "03-flujos", "titulo": "Flujos", "descripcion": "Los recorridos completos del MVP (alta sin ayuda, el flujo principal del producto, pago, configuración), paso a paso, antes de dibujar pantallas.", "entra": "Después del sistema de diseño"},
+        {"carpeta": "04-pantallas-mvp", "titulo": "Pantallas del MVP", "descripcion": "Todas las pantallas de cada rol, en celular y computadora, con los textos finales.", "entra": "Después de los flujos"},
+        {"carpeta": "05-prototipo", "titulo": "Prototipo", "descripcion": "Clicable; lo revisan la persona y sus socios; se corrige hasta «aprobado».", "entra": "Después de las pantallas"}
+      ],
+      "skills": [
+        {"nombre": "ui-ux-pro-max", "url": "https://github.com/nextlevelbuilder/ui-ux-pro-max-skill/tree/main/.claude/skills/ui-ux-pro-max"},
+        {"nombre": "design-system", "url": "https://github.com/nextlevelbuilder/ui-ux-pro-max-skill/tree/main/.claude/skills/design-system"},
+        {"nombre": "frontend-design", "url": "https://github.com/anthropics/skills/tree/main/skills/frontend-design"},
+        {"nombre": "impeccable", "url": "https://github.com/pbakaus/impeccable/tree/main/plugin/skills/impeccable"},
+        {"nombre": "shadcn", "url": "https://github.com/shadcn-ui/ui/tree/main/skills/shadcn"},
+        {"nombre": "emilkowalski/skills", "url": "https://github.com/emilkowalski/skills"},
+        {"nombre": "designlang / design-extract", "url": "https://github.com/Manavarya09/design-extract"},
+        {"nombre": "grilling (mattpocock/skills)", "url": "https://github.com/mattpocock/skills/tree/main/skills/productivity/grilling"}
+      ]
+    },
+    {
+      "n": "04",
+      "carpeta": "04. Backend base",
+      "titulo": "Base técnica (backend)",
+      "objetivo": "El esqueleto que usan todos los módulos: datos, API, inicio de sesión, archivos y correos.",
+      "por_que": "Es el esqueleto: la base de datos, el inicio de sesión y la regla de que un cliente nunca ve datos de otro. Si esto falla, falla todo lo que se construya encima; por eso se escriben las pruebas antes del código.",
+      "entra": "Cuando el prototipo (03/05) esté aprobado y existan los entornos (01/04).",
+      "terminada": "API con inicio de sesión y aislamiento entre clientes probado con pruebas automáticas en verde.",
+      "como": [
+        "Pruebas escritas antes del código.",
+        "Prueba obligatoria si hay varios clientes: un cliente nunca ve datos de otro.",
+        "Los nombres de las subetapas siguen el camino técnico elegido en la visión §13."
+      ],
+      "subetapas": [
+        {"carpeta": "01-analisis-de-ataques", "titulo": "Análisis de ataques", "descripcion": "Mapa de riesgos de toda la plataforma (momento 1 de seguridad): cuentas, pagos, archivos subidos, datos sensibles, integraciones. Qué se mitiga en la base y qué en cada módulo.", "entra": "Ya"},
+        {"carpeta": "02-modelo-de-datos", "titulo": "Modelo de datos", "descripcion": "Las tablas del MVP con sus relaciones, los datos sensibles separados y cifrados, la tabla de consentimientos a la que solo se agregan filas, y las migraciones.", "entra": "Después del análisis de ataques"},
+        {"carpeta": "03-api-y-permisos", "titulo": "API y permisos", "descripcion": "La API con los roles y permisos de la visión §3 y, si hay varios clientes, la separación entre ellos.", "entra": "Después del modelo de datos"},
+        {"carpeta": "04-inicio-de-sesion", "titulo": "Inicio de sesión", "descripcion": "Correo con código o contraseña, inicio con Google u otros si aplica, cambio de correo y de forma de inicio de sesión, sesiones y cierre.", "entra": "Después de la API"},
+        {"carpeta": "05-archivos-colas-y-correos", "titulo": "Archivos, colas y correos", "descripcion": "Subida de archivos, tareas programadas y en cola, envío de correos transaccionales con la marca.", "entra": "Después del inicio de sesión"}
+      ],
+      "skills": [
+        {"nombre": "test-driven-development (superpowers)", "url": "https://github.com/obra/superpowers/tree/main/skills/test-driven-development"},
+        {"nombre": "writing-plans (superpowers)", "url": "https://github.com/obra/superpowers/tree/main/skills/writing-plans"},
+        {"nombre": "owasp-security", "url": "https://github.com/agamm/claude-code-owasp/tree/main/.claude/skills/owasp-security"},
+        {"nombre": "Context7", "url": "https://github.com/upstash/context7"},
+        {"nombre": "grilling (mattpocock/skills)", "url": "https://github.com/mattpocock/skills/tree/main/skills/productivity/grilling"},
+        {"nombre": "claude-code-security-review (GitHub Action)", "url": "https://github.com/anthropics/claude-code-security-review"}
+      ]
+    },
+    {
+      "n": "05",
+      "carpeta": "05. Seguridad base",
+      "titulo": "Seguridad base",
+      "objetivo": "Cerrar todas las entradas conocidas antes de construir encima, y dejar el código limpio.",
+      "por_que": "Una app que guarda datos de personas o cobros es un blanco. Aquí se cierran las entradas conocidas con herramientas de marcas reconocidas y se limpia el código que la IA dejó duplicado, antes de seguir construyendo. Lo que no se verifica aquí sale carísimo después de lanzar.",
+      "entra": "Cuando la etapa 04 esté terminada.",
+      "terminada": "Auditoría sin hallazgos críticos ni altos abiertos y código limpio.",
+      "como": ["Lo que salga crítico o alto se corrige en esta misma etapa."],
+      "subetapas": [
+        {"carpeta": "01-blindaje", "titulo": "Blindaje", "descripcion": "Protección contra los ataques comunes (inyección, XSS, CSRF), límites de intentos, protección contra bots, cookies seguras, doble factor para cuentas administradoras, manejo de secretos, respuesta a incidentes.", "entra": "Ya"},
+        {"carpeta": "02-auditoria-de-seguridad", "titulo": "Auditoría de seguridad", "descripcion": "Herramientas de marcas reconocidas sobre todo el backend; lo crítico o alto se corrige aquí.", "entra": "Después del blindaje"},
+        {"carpeta": "03-limpieza-de-codigo", "titulo": "Limpieza de código", "descripcion": "Duplicados, código muerto, lo que la IA sobrescribió sin borrar, dependencias sin usar.", "entra": "Después de la auditoría"}
+      ],
+      "skills": [
+        {"nombre": "claude-security", "url": "https://github.com/anthropics/claude-plugins-official/tree/main/plugins/claude-security"},
+        {"nombre": "static-analysis (Semgrep/CodeQL, Trail of Bits)", "url": "https://github.com/trailofbits/skills/tree/main/plugins/static-analysis"},
+        {"nombre": "insecure-defaults (Trail of Bits)", "url": "https://github.com/trailofbits/skills/tree/main/plugins/insecure-defaults"},
+        {"nombre": "sharp-edges (Trail of Bits)", "url": "https://github.com/trailofbits/skills/tree/main/plugins/sharp-edges/skills/sharp-edges"},
+        {"nombre": "supply-chain-risk-auditor (Trail of Bits)", "url": "https://github.com/trailofbits/skills/tree/main/plugins/supply-chain-risk-auditor/skills/supply-chain-risk-auditor"},
+        {"nombre": "owasp-security", "url": "https://github.com/agamm/claude-code-owasp/tree/main/.claude/skills/owasp-security"},
+        {"nombre": "gitleaks", "url": "https://github.com/gitleaks/gitleaks"},
+        {"nombre": "remove-ai-slops", "url": "https://github.com/code-yeongyu/oh-my-openagent/tree/dev/packages/shared-skills/skills/remove-ai-slops"},
+        {"nombre": "claude-code-security-review (GitHub Action)", "url": "https://github.com/anthropics/claude-code-security-review"}
+      ]
+    },
+    {
+      "n": "06",
+      "carpeta": "06. Frontend base",
+      "titulo": "Base visual (frontend)",
+      "objetivo": "La cáscara de la app: navegación por rol, marca y las pantallas vacías de cada rol.",
+      "por_que": "Es la cáscara que ve el usuario: la navegación por rol, la marca y las pantallas vacías. Se construye sobre el diseño aprobado, así que ningún módulo inventa su propio estilo.",
+      "entra": "Cuando la etapa 05 esté terminada.",
+      "terminada": "Se navegan todas las pantallas vacías de cada rol, con la marca, en celular y computadora.",
+      "como": ["Se construye sobre el prototipo aprobado en la etapa 03."],
+      "subetapas": [
+        {"carpeta": "01-app-y-navegacion", "titulo": "App y navegación", "descripcion": "La app instalable (o nativa, según el camino técnico) con el menú y las rutas por rol.", "entra": "Ya"},
+        {"carpeta": "02-marca", "titulo": "Marca", "descripcion": "Logo, colores, ícono y nombre; si hay marca por cliente, según su dominio o cuenta, con revisión automática de contraste.", "entra": "Después de la navegación"},
+        {"carpeta": "03-pantallas-vacias", "titulo": "Pantallas vacías", "descripcion": "Cada pantalla del prototipo, vacía pero navegable, con sus estados (cargando, vacío, error).", "entra": "Después de la marca"},
+        {"carpeta": "04-componentes", "titulo": "Componentes", "descripcion": "Los del sistema de diseño, listos para los módulos.", "entra": "Después de las pantallas"}
+      ],
+      "skills": [
+        {"nombre": "frontend-design", "url": "https://github.com/anthropics/skills/tree/main/skills/frontend-design"},
+        {"nombre": "shadcn", "url": "https://github.com/shadcn-ui/ui/tree/main/skills/shadcn"},
+        {"nombre": "vercel-labs/agent-skills", "url": "https://github.com/vercel-labs/agent-skills"},
+        {"nombre": "web-quality-skills", "url": "https://github.com/addyosmani/web-quality-skills"},
+        {"nombre": "webapp-testing", "url": "https://github.com/anthropics/skills/tree/main/skills/webapp-testing"},
+        {"nombre": "emilkowalski/skills", "url": "https://github.com/emilkowalski/skills"}
+      ]
+    },
+    {
+      "n": "07",
+      "carpeta": "07. Modulos MVP",
+      "titulo": "Módulos del MVP",
+      "objetivo": "Cada función del MVP, una por una, con el ciclo completo de 8 pasos.",
+      "por_que": "Cada función del producto se construye una por una con el mismo ciclo: plan interrogado, ataques, pruebas, construcción, revisión por un segundo agente que abre la app, auditoría, SOP de uso y guardado. Es donde nace lo que el cliente paga y la documentación con que se le enseña a usarlo.",
+      "entra": "Cuando la etapa 06 esté terminada. Los módulos van en orden de dependencia.",
+      "terminada": "Cada módulo con pruebas en verde, auditoría limpia, SOP de uso escrito y publicado en el entorno de pruebas.",
+      "como": [
+        "Una subetapa por cada módulo marcado MVP en la visión del producto (§6), en orden de dependencia; se generan al adaptar esta hoja de ruta.",
+        "Cada módulo sigue el ciclo de 8 pasos: PRD interrogado → ataques → pruebas → construcción → revisión → auditoría y limpieza → SOP de uso → /guardar.",
+        "Skills base en todos los módulos; las específicas se indican en cada subetapa."
+      ],
+      "subetapas": [
+        {"carpeta": "01-modulo-por-definir", "titulo": "<<Módulo 1 de la visión §6>>", "descripcion": "<<qué hace, para quién, qué pasa solo y qué hace una persona; skill específica si la hay>>", "entra": "Ya"}
+      ],
+      "skills": [
+        {"nombre": "superpowers (TDD, planes, subagentes, revisión)", "url": "https://github.com/obra/superpowers"},
+        {"nombre": "test-driven-development (superpowers)", "url": "https://github.com/obra/superpowers/tree/main/skills/test-driven-development"},
+        {"nombre": "playwright-cli", "url": "https://github.com/microsoft/playwright-cli"},
+        {"nombre": "claude-security", "url": "https://github.com/anthropics/claude-plugins-official/tree/main/plugins/claude-security"},
+        {"nombre": "remove-ai-slops", "url": "https://github.com/code-yeongyu/oh-my-openagent/tree/dev/packages/shared-skills/skills/remove-ai-slops"},
+        {"nombre": "grilling (mattpocock/skills)", "url": "https://github.com/mattpocock/skills/tree/main/skills/productivity/grilling"},
+        {"nombre": "sop-creator (founder-skills)", "url": "https://github.com/ognjengt/founder-skills/tree/main/skills/sop-creator"}
+      ]
+    },
+    {
+      "n": "08",
+      "carpeta": "08. Landing y alta",
+      "titulo": "Landing y alta",
+      "objetivo": "La página donde un cliente conoce el producto, elige plan y crea su cuenta solo.",
+      "por_que": "Nadie compra lo que no entiende. La página pública explica el producto y deja que un cliente cree su cuenta solo. Aquí también van los textos legales y el registro de quién aceptó qué y cuándo: sin eso, un reclamo no se puede defender.",
+      "entra": "Cuando el alta y los planes funcionen en el entorno de pruebas. La subetapa de legal puede empezar antes: sus textos no dependen del código.",
+      "terminada": "Alguien que no conoce el producto entra por el enlace, acepta los términos y la privacidad en casillas separadas, y termina con su cuenta configurada sin hablar con nadie; cada aceptación quedó registrada.",
+      "como": ["La landing se construye con el mismo camino técnico del producto (nunca en un gestor de contenidos con plugins)."],
+      "subetapas": [
+        {"carpeta": "01-mensaje-y-estructura", "titulo": "Mensaje y estructura", "descripcion": "Qué dice la página y en qué orden, con las palabras del cliente (lente «conversación real»).", "entra": "Ya"},
+        {"carpeta": "02-diseno-y-construccion", "titulo": "Diseño y construcción", "descripcion": "La página, con la marca, publicada en pruebas.", "entra": "Después del mensaje"},
+        {"carpeta": "03-registro-y-pago", "titulo": "Registro y pago", "descripcion": "Conecta con el alta sin ayuda y con el cobro del plan.", "entra": "Cuando el alta funcione"},
+        {"carpeta": "04-seo-y-medicion", "titulo": "SEO y medición", "descripcion": "Posicionamiento y analítica sin datos personales.", "entra": "Después de la construcción"},
+        {"carpeta": "05-legal-y-consentimiento", "titulo": "Legal y consentimiento", "descripcion": "Términos y condiciones, política de privacidad según la ley del país, cookies, reembolso y retracto, contrato de tratamiento de datos si hay clientes que suben datos de terceros; dos casillas separadas en el alta; tabla de consentimientos a la que solo se agregan filas (fecha, hora, IP, versión). Revisión de un abogado del país antes de lanzar.", "entra": "Ya"}
+      ],
+      "skills": [
+        {"nombre": "copywriting", "url": "https://github.com/coreyhaines31/marketingskills/tree/main/skills/copywriting"},
+        {"nombre": "cro", "url": "https://github.com/coreyhaines31/marketingskills/tree/main/skills/cro"},
+        {"nombre": "signup", "url": "https://github.com/coreyhaines31/marketingskills/tree/main/skills/signup"},
+        {"nombre": "frontend-design", "url": "https://github.com/anthropics/skills/tree/main/skills/frontend-design"},
+        {"nombre": "seo", "url": "https://github.com/AgriciDaniel/claude-seo/tree/main/skills/seo"},
+        {"nombre": "posthog/skills", "url": "https://github.com/PostHog/skills"},
+        {"nombre": "gdpr-compliance", "url": "https://github.com/Sushegaad/Claude-Skills-Governance-Risk-and-Compliance/tree/main/plugins/gdpr-compliance/skills/gdpr-compliance"},
+        {"nombre": "doc-coauthoring", "url": "https://github.com/anthropics/skills/tree/main/skills/doc-coauthoring"}
+      ]
+    },
+    {
+      "n": "09",
+      "carpeta": "09. Lanzamiento MVP",
+      "titulo": "Lanzamiento del MVP",
+      "objetivo": "Pasar de «funciona en pruebas» a «un cliente real usa y paga el producto».",
+      "por_que": "Pasar de «funciona en pruebas» a «un cliente real lo usa y paga». Pruebas de punta a punta, auditoría final, producción con monitoreo y un piloto real. Es la única forma de saber que el producto sirve de verdad.",
+      "entra": "Cuando los módulos del MVP y la landing estén en el entorno de pruebas.",
+      "terminada": "El primer cliente real usando y pagando el producto (piloto cerrado) y los ajustes del piloto hechos.",
+      "como": ["Nada sale a producción sin la auditoría final limpia.", "El gate para pasar a V2 es por resultado (p. ej. N clientes pagando), nunca una fecha."],
+      "subetapas": [
+        {"carpeta": "01-pruebas-de-punta-a-punta", "titulo": "Pruebas de punta a punta", "descripcion": "Los flujos completos (alta, el flujo principal, pago) probados con un navegador automatizado en pruebas.", "entra": "Ya"},
+        {"carpeta": "02-auditoria-final", "titulo": "Auditoría final", "descripcion": "Seguridad + limpieza de código sobre todo el MVP.", "entra": "Después de las pruebas"},
+        {"carpeta": "03-produccion-y-monitoreo", "titulo": "Producción y monitoreo", "descripcion": "Paso de develop a main con versión v0.1.0 y CHANGELOG; alertas de errores; respaldos de la base de datos.", "entra": "Después de la auditoría"},
+        {"carpeta": "04-piloto", "titulo": "Piloto", "descripcion": "Uno o pocos clientes reales usan el producto en su día a día; se mide lo que importa (uso, pagos, tiempo ahorrado).", "entra": "Después de producción"},
+        {"carpeta": "05-ajustes", "titulo": "Ajustes", "descripcion": "Lo que el piloto enseñe.", "entra": "Durante y después del piloto"}
+      ],
+      "skills": [
+        {"nombre": "playwright-cli", "url": "https://github.com/microsoft/playwright-cli"},
+        {"nombre": "webapp-testing", "url": "https://github.com/anthropics/skills/tree/main/skills/webapp-testing"},
+        {"nombre": "claude-security", "url": "https://github.com/anthropics/claude-plugins-official/tree/main/plugins/claude-security"},
+        {"nombre": "getsentry/skills", "url": "https://github.com/getsentry/skills"},
+        {"nombre": "verification-before-completion (superpowers)", "url": "https://github.com/obra/superpowers/tree/main/skills/verification-before-completion"},
+        {"nombre": "finishing-a-development-branch (superpowers)", "url": "https://github.com/obra/superpowers/tree/main/skills/finishing-a-development-branch"}
+      ]
+    },
+    {
+      "n": "10",
+      "carpeta": "10. Version 2",
+      "titulo": "Versión 2",
+      "objetivo": "Las funciones que hacen al producto distinto de todo lo demás.",
+      "por_que": "Lo que hace al producto distinto se construye después de que el MVP cobra, con el mismo ciclo. Construirlo antes es gastar meses en lo que nadie ha pagado todavía.",
+      "entra": "Cuando el piloto de la etapa 09 cierre; 09/05-ajustes puede seguir en paralelo.",
+      "terminada": "Cada módulo de V2 en producción con su auditoría y su SOP.",
+      "como": ["Una subetapa por cada módulo marcado V2 en la visión (§6); se generan al adaptar esta hoja de ruta.", "Mismo ciclo de 8 pasos por módulo. El detalle de cada uno se escribe al llegar."],
+      "subetapas": [
+        {"carpeta": "01-modulo-v2-por-definir", "titulo": "<<Módulo V2 de la visión §6>>", "descripcion": "<<qué hace>>", "entra": "Al cerrar el piloto"}
+      ],
+      "skills": [
+        {"nombre": "superpowers (TDD, planes, subagentes, revisión)", "url": "https://github.com/obra/superpowers"},
+        {"nombre": "claude-security", "url": "https://github.com/anthropics/claude-plugins-official/tree/main/plugins/claude-security"},
+        {"nombre": "grilling (mattpocock/skills)", "url": "https://github.com/mattpocock/skills/tree/main/skills/productivity/grilling"},
+        {"nombre": "sop-creator (founder-skills)", "url": "https://github.com/ognjengt/founder-skills/tree/main/skills/sop-creator"}
+      ]
+    },
+    {
+      "n": "11",
+      "carpeta": "11. Version 3",
+      "titulo": "Versión 3 en adelante",
+      "objetivo": "Expansión. Se planea en detalle cuando V2 esté en producción.",
+      "por_que": "Expansión: otros países, apps de tienda, integraciones, lo que la visión dejó para después. Se planea en detalle cuando V2 esté en producción; escribirlo ahora solo fija el rumbo.",
+      "entra": "Cuando V2 esté en producción.",
+      "terminada": "—",
+      "como": ["Se planea en detalle cuando V2 esté en producción."],
+      "subetapas": [
+        {"carpeta": "01-por-definir", "titulo": "<<Lo que la visión dejó para V3+>>", "descripcion": "<<una línea por idea>>", "entra": "Cuando V2 esté en producción"}
+      ],
+      "skills": []
+    },
+    {
+      "n": "12",
+      "carpeta": "12. Ventas",
+      "titulo": "Ventas",
+      "objetivo": "Conseguir los primeros clientes mientras se construye, y después escalar la venta.",
+      "por_que": "Sin clientes no hay producto. La venta empieza antes de que el producto exista (conversaciones, lista de espera, demos) y define el gate del MVP: clientes reales pagando.",
+      "entra": "Ya, a ritmo de quien vende. Solo existe si hay una persona con ese rol.",
+      "terminada": "No tiene gate; el gate del MVP es N clientes pagando.",
+      "como": ["A ritmo de quien vende. Claude prepara material solo a pedido expreso.", "Ningún dato de cliente final entra a la herramienta de ventas (CRM)."],
+      "subetapas": [
+        {"carpeta": "01-pitch-y-precios", "titulo": "Pitch y precios", "descripcion": "La promesa en una frase, la objeción principal y los precios (de la visión §9).", "entra": "Ya"},
+        {"carpeta": "02-demo-y-lista-de-espera", "titulo": "Demo y lista de espera", "descripcion": "Material para enseñar el producto antes de que exista y una lista de espera con nombre y fecha.", "entra": "Ya"},
+        {"carpeta": "03-pipeline", "titulo": "Pipeline", "descripcion": "Clientes contactados, en qué paso van, sin datos sensibles.", "entra": "Ya"},
+        {"carpeta": "04-pauta", "titulo": "Pauta", "descripcion": "Publicidad pagada cuando el producto funcione y el piloto cierre.", "entra": "Al cerrar el piloto"}
+      ],
+      "skills": [
+        {"nombre": "copywriting", "url": "https://github.com/coreyhaines31/marketingskills/tree/main/skills/copywriting"},
+        {"nombre": "cold-email", "url": "https://github.com/coreyhaines31/marketingskills/tree/main/skills/cold-email"},
+        {"nombre": "pricing", "url": "https://github.com/coreyhaines31/marketingskills/tree/main/skills/pricing"}
+      ]
+    },
+    {
+      "n": "13",
+      "carpeta": "13. Operacion",
+      "titulo": "Operación",
+      "objetivo": "Soporte, métricas, finanzas y el centro de ayuda (los SOP de uso de cada módulo) cuando haya clientes en producción.",
+      "por_que": "Cuando hay clientes pagando, el trabajo es acompañarlos, atender problemas, medir y cerrar cuentas. Aquí viven los SOP de uso que se escriben al cerrar cada módulo: son el centro de ayuda y la base del onboarding.",
+      "entra": "Cuando el piloto de la etapa 09 cierre; 05-sops-y-centro-de-ayuda empieza con el primer módulo cerrado de la etapa 07.",
+      "terminada": "—",
+      "como": ["Se activa con el primer cliente en producción, salvo 05-sops-y-centro-de-ayuda, que recibe un SOP cada vez que se cierra un módulo."],
+      "subetapas": [
+        {"carpeta": "01-onboarding-clientes", "titulo": "Onboarding de clientes", "descripcion": "Cómo se acompaña a un cliente que entra, aunque el alta sea sin ayuda.", "entra": "Al cerrar el piloto"},
+        {"carpeta": "02-soporte", "titulo": "Soporte", "descripcion": "Canales, tiempos de respuesta y respuestas tipo.", "entra": "Al cerrar el piloto"},
+        {"carpeta": "03-metricas", "titulo": "Métricas", "descripcion": "Clientes pagando, uso, cancelaciones. El gate del MVP se mide aquí.", "entra": "Al cerrar el piloto"},
+        {"carpeta": "04-finanzas", "titulo": "Finanzas", "descripcion": "Ingresos, costos de herramientas, reparto entre socios si los hay.", "entra": "Al cerrar el piloto"},
+        {"carpeta": "05-sops-y-centro-de-ayuda", "titulo": "SOP y centro de ayuda", "descripcion": "Un SOP por pregunta («¿Cómo hago X?»), con pasos literales y pantallazos de la app con datos inventados, escrito al cerrar cada módulo. Es el centro de ayuda.", "entra": "Con el primer módulo cerrado"}
+      ],
+      "skills": [
+        {"nombre": "sop-creator (founder-skills)", "url": "https://github.com/ognjengt/founder-skills/tree/main/skills/sop-creator"},
+        {"nombre": "doc-coauthoring", "url": "https://github.com/anthropics/skills/tree/main/skills/doc-coauthoring"}
+      ]
+    },
+    {
+      "n": "14",
+      "carpeta": "14. Codigo",
+      "titulo": "Código",
+      "objetivo": "El código del producto, dentro del mismo repositorio del proyecto. Su propio CLAUDE.md manda adentro. Secretos jamás aquí.",
+      "por_que": "El código vive en el mismo repositorio que la documentación, para que cualquiera que entre después vea cómo se hizo todo. Nace en la etapa 01 con pruebas automáticas y sin secretos.",
+      "entra": "Nace en la etapa 01/04-entornos.",
+      "terminada": "—",
+      "como": ["Nace en 01/04-entornos con la estructura del camino técnico elegido (visión §13). Si alguna herramienta falla por el espacio del nombre de la carpeta, se renombra a `codigo` y se anota la decisión."],
+      "subetapas": [],
+      "skills": []
+    }
+  ]
+}

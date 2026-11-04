@@ -1,0 +1,50 @@
+{
+  "skill_name": "planificar-proyecto",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "Hola! Tengo una idea pero no sé por dónde empezar. Tengo una peluquería en Guadalajara (México) y quiero hacer una app para que mis clientas agenden su cita solas y que les llegue un recordatorio por WhatsApp, porque me pasan cancelando a última hora. Me gustaría después vendérsela a otras peluquerías de aquí. Soy estilista, nunca he programado ni usado Claude, y puedo dedicarle unas 6 horas por semana. Trabajo sola. Puedes planificarme el proyecto? Ponlo en la carpeta de pruebas que te indico como carpeta de trabajo.",
+      "expected_output": "Entrevista corta numerada con respuestas recomendadas (sin volver a preguntar lo ya dicho), investigación con agentes limitada (≤4) con reportes con URL y fecha y una verificación adversarial, Consejo de 5 asesores con acta, visión del producto en HTML, hoja-de-ruta.json adaptada (sin etapa de Ventas aparte o con una persona sola, con pruebas de concepto para WhatsApp y pagos en México, módulos de citas y recordatorios), la carpeta del proyecto creada con CLAUDE.md, ESTADO.md, DECISIONES.md, fichas por etapa y subetapa, la skill /guardar instalada con scripts en Node, verificadores limpios, y un mensaje de cierre sin jerga que explica cómo seguir.",
+      "files": [],
+      "expectations": [
+        "Existe proyecto/CLAUDE.md con la línea @ESTADO.md y secciones de protocolo de chat, ciclo de trabajo, decisiones fijas, seguridad y GitHub",
+        "Existe proyecto/ESTADO.md con un «Siguiente paso exacto» que nombra etapa, subetapa, archivos que lee Claude y nombre del chat",
+        "Existe proyecto/DECISIONES.md con al menos 5 decisiones numeradas, cada una con fecha absoluta y un porqué",
+        "Existe 00. Planeacion/07-vision-producto/vision-producto.html con secciones de problema, para quién, módulos marcados MVP/V2, cómo se cobra, reglas fijas, legal y lo que hay que verificar",
+        "Existe 00. Planeacion/07-vision-producto/hoja-de-ruta.json con etapas y subetapas adaptadas al proyecto (las pruebas de concepto y los módulos del MVP salen de la visión, no son los marcadores de la plantilla «por definir»), y hoja-de-ruta.html generada",
+        "Cada etapa de la hoja de ruta tiene ESTADO.md y LEEME.md, y cada subetapa tiene LEEME.md con las 9 secciones (objetivo, qué se entrega, terminada cuando, entra cuando, qué lee Claude, skills, cómo se trabaja, qué necesita, archivos)",
+        "Existen al menos 3 reportes de investigación en 00. Planeacion/02-investigacion/ donde cada cifra lleva URL y fecha de lectura, con sección «Vacíos», más _verificaciones.md con veredictos CONFIRMADA/CORREGIDA/REFUTADA",
+        "Existe el acta del Consejo en 00. Planeacion/04-consejo/ con cinco voces, revisión anónima y veredicto del Presidente que elige una razón principal y un paso siguiente",
+        "Existe .claude/skills/guardar/SKILL.md con los seis scripts .mjs y los verificadores terminan limpios (FICHAS: LIMPIAS, VERIFICACIÓN LIMPIA, SECRETOS: LIMPIO) al correrlos sobre el proyecto",
+        "Los registros no tienen marcas <<…>> sin llenar, ni atribuciones narrativas («Claude hizo», «<persona> dijo»), ni Co-Authored-By, ni fechas relativas",
+        "El mensaje final al usuario está sin jerga, dice qué quedó en la carpeta, cómo se sigue («¿con qué seguimos?» en un chat nuevo) y los pendientes de la persona",
+        "La entrevista no vuelve a preguntar lo que el usuario ya contó en su mensaje y cada pregunta trae respuesta recomendada numerada",
+        "La hoja de ruta de la peluquería no tiene etapa de Ventas aparte con otra persona (trabaja sola) o la etapa está marcada como de la misma persona, y la etapa 02 incluye una prueba de concepto sobre WhatsApp (API de Meta/WhatsApp Business) y una sobre pagos en México",
+        "La lente legal cita la ley de datos personales de México (LFPDPPP) con fuente y fecha, y la visión la menciona en la sección legal"
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "Somos dos socios en Bogotá: yo soy ingeniera de sistemas y mi socio es profesor de matemáticas con 15 años dando clases. Queremos montar una plataforma donde los padres contraten tutores de matemáticas verificados para sus hijos de colegio, con clases por videollamada y pago en línea; nosotros nos quedamos con una comisión. Él consigue los tutores y los padres, yo construyo. Tenemos como USD 100 al mes para herramientas y yo tengo plan Pro de Claude. Queremos arrancar bien organizados: que cada chat de Claude Code sepa dónde vamos. Hacé toda la planeación y dejá la carpeta lista (usá la carpeta de trabajo actual).",
+      "expected_output": "Entrevista que reconoce lo ya contado y pregunta solo lo que falta (modelo de comisión, menores de edad → lente legal fuerte: Ley 1581 de Colombia y datos de menores; pagos en Colombia), investigación acotada, Consejo, visión con roles (padre, tutor, administrador), hoja de ruta adaptada con etapa 12 Ventas asignada al socio, personas y roles en CLAUDE.md, estructura creada y verificada, repo privado en GitHub solo con OK explícito (o dejado local si no hay OK), y cierre que explica el protocolo «¿con qué seguimos?».",
+      "files": [],
+      "expectations": [
+        "Existe proyecto/CLAUDE.md con la línea @ESTADO.md y secciones de protocolo de chat, ciclo de trabajo, decisiones fijas, seguridad y GitHub",
+        "Existe proyecto/ESTADO.md con un «Siguiente paso exacto» que nombra etapa, subetapa, archivos que lee Claude y nombre del chat",
+        "Existe proyecto/DECISIONES.md con al menos 5 decisiones numeradas, cada una con fecha absoluta y un porqué",
+        "Existe 00. Planeacion/07-vision-producto/vision-producto.html con secciones de problema, para quién, módulos marcados MVP/V2, cómo se cobra, reglas fijas, legal y lo que hay que verificar",
+        "Existe 00. Planeacion/07-vision-producto/hoja-de-ruta.json con etapas y subetapas adaptadas al proyecto (las pruebas de concepto y los módulos del MVP salen de la visión, no son los marcadores de la plantilla «por definir»), y hoja-de-ruta.html generada",
+        "Cada etapa de la hoja de ruta tiene ESTADO.md y LEEME.md, y cada subetapa tiene LEEME.md con las 9 secciones (objetivo, qué se entrega, terminada cuando, entra cuando, qué lee Claude, skills, cómo se trabaja, qué necesita, archivos)",
+        "Existen al menos 3 reportes de investigación en 00. Planeacion/02-investigacion/ donde cada cifra lleva URL y fecha de lectura, con sección «Vacíos», más _verificaciones.md con veredictos CONFIRMADA/CORREGIDA/REFUTADA",
+        "Existe el acta del Consejo en 00. Planeacion/04-consejo/ con cinco voces, revisión anónima y veredicto del Presidente que elige una razón principal y un paso siguiente",
+        "Existe .claude/skills/guardar/SKILL.md con los seis scripts .mjs y los verificadores terminan limpios (FICHAS: LIMPIAS, VERIFICACIÓN LIMPIA, SECRETOS: LIMPIO) al correrlos sobre el proyecto",
+        "Los registros no tienen marcas <<…>> sin llenar, ni atribuciones narrativas («Claude hizo», «<persona> dijo»), ni Co-Authored-By, ni fechas relativas",
+        "El mensaje final al usuario está sin jerga, dice qué quedó en la carpeta, cómo se sigue («¿con qué seguimos?» en un chat nuevo) y los pendientes de la persona",
+        "La entrevista no vuelve a preguntar lo que el usuario ya contó en su mensaje y cada pregunta trae respuesta recomendada numerada",
+        "CLAUDE.md lista a las dos personas con sus roles (ingeniera que construye; profesor que consigue tutores y padres/vende) y la hoja de ruta incluye la etapa de Ventas asignada al socio",
+        "La lente legal cita la Ley 1581 de 2012 de Colombia y el tratamiento de datos de menores de edad con fuente y fecha, y la visión lo refleja en la sección legal y en las reglas fijas",
+        "No se creó ningún repositorio en GitHub (no había OK del usuario): el repositorio quedó local o el ESTADO.md lo anota en «Bloqueos y avisos»"
+      ]
+    }
+  ]
+}

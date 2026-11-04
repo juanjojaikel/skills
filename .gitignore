@@ -1,0 +1,18 @@
+# Resultados de pruebas de las skills (no se publican)
+*-workspace/
+skills/*/evals/workspace/
+
+# Sistema
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Local de Claude Code
+.claude/settings.local.json
+.claude/worktrees/
+
+# Temporales
+*.log
+*.tmp
+node_modules/
+__pycache__/

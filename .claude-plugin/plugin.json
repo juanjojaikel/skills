@@ -1,0 +1,10 @@
+{
+  "name": "planificar-proyecto",
+  "version": "1.0.0",
+  "description": "Lleva una idea de app o producto digital desde cero hasta un plan completo y una carpeta de proyecto lista para construir con Claude Code.",
+  "author": {
+    "name": "Juanjo Jaikel"
+  },
+  "license": "MIT",
+  "keywords": ["planeacion", "proyecto", "app", "saas", "hoja de ruta", "idea", "mvp"]
+}

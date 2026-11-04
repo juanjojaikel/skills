@@ -1,0 +1,51 @@
+# Dependencias y builds
+node_modules/
+dist/
+build/
+.wrangler/
+.turbo/
+.cache/
+.next/
+coverage/
+playwright-report/
+test-results/
+
+# Python
+.venv/
+__pycache__/
+*.pyc
+
+# Secretos: nunca entran al repositorio (los .example sí: no llevan valores reales)
+.env
+.env.*
+!.env.example
+.dev.vars
+.dev.vars.*
+!.dev.vars.example
+client_secret*.json
+*service-account*.json
+credentials.json
+token.json
+secrets.json
+.npmrc
+*.pem
+*.key
+*.p12
+*.pfx
+*.keystore
+*.jks
+
+# Sistema
+.DS_Store
+Thumbs.db
+desktop.ini
+*.lnk
+
+# Local de Claude Code (no se comparte)
+.claude/settings.local.json
+.claude/worktrees/
+
+# Temporales
+*.log
+*.tmp
+_scratch/

@@ -1,0 +1,151 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{{PROYECTO}} — Visión del producto</title>
+<style>
+:root{--bg:#fbfaf7;--fg:#1d1d1b;--muted:#6b6a65;--line:#e4e1d8;--card:#ffffff;--acc:#d9480f;--ok:#2b8a3e;--warn:#b7791f;--v1:#d9480f;--v2:#1971c2;--v3:#7048e8}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#161614;--fg:#ecebe6;--muted:#a3a29b;--line:#34332f;--card:#1f1f1c;--acc:#ff8a4c;--ok:#69db7c;--warn:#f6c453;--v1:#ff8a4c;--v2:#74c0fc;--v3:#b197fc}}
+:root[data-theme="dark"]{--bg:#161614;--fg:#ecebe6;--muted:#a3a29b;--line:#34332f;--card:#1f1f1c;--acc:#ff8a4c;--ok:#69db7c;--warn:#f6c453;--v1:#ff8a4c;--v2:#74c0fc;--v3:#b197fc}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--fg);font:16px/1.6 system-ui,-apple-system,"Segoe UI",sans-serif}
+.wrap{max-width:960px;margin:0 auto;padding:24px 16px 80px}
+h1{font-size:2rem;margin:0 0 4px}h2{margin-top:48px;border-bottom:2px solid var(--line);padding-bottom:6px}h3{margin-top:28px}
+.sub{color:var(--muted)}
+nav{display:flex;flex-wrap:wrap;gap:6px 14px;margin:18px 0;padding:12px;border:1px solid var(--line);border-radius:8px;background:var(--card)}
+nav a{color:var(--acc);text-decoration:none;font-size:.92rem}
+table{width:100%;border-collapse:collapse;margin:12px 0;font-size:.93rem;display:block;overflow-x:auto}
+th,td{border:1px solid var(--line);padding:7px 9px;text-align:left;vertical-align:top}
+th{background:var(--card)}
+.card{border:1px solid var(--line);background:var(--card);border-radius:8px;padding:12px 16px;margin:12px 0}
+.warn{border-left:4px solid var(--warn)}.ok{border-left:4px solid var(--ok)}
+.tag{display:inline-block;font-size:.75rem;font-weight:700;padding:1px 7px;border-radius:10px;color:#fff;white-space:nowrap}
+.v1{background:var(--v1)}.v2{background:var(--v2)}.v3{background:var(--v3)}
+.src{color:var(--muted);font-size:.82rem}
+code{background:var(--card);border:1px solid var(--line);padding:0 4px;border-radius:4px;font-size:.88em}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:10px}
+.grid .card{margin:0}
+.grid b{display:block}
+</style>
+</head>
+<body><div class="wrap">
+
+<h1>{{PROYECTO}} — Visión del producto</h1>
+<p class="sub">Borrador {{BORRADOR}} · {{FECHA}} · <<«Aprobado el …» cuando la persona lo apruebe>>. Es la fuente de verdad del producto: el «qué» y el «por qué», no el «cómo». Se actualiza solo con una decisión escrita en <code>DECISIONES.md</code>.</p>
+<p class="src">Fuentes: <b>[E]</b> = entrevista (<code>00. Planeacion/01-entrevista/entrevista.md</code>) · <b>[I-<i>lente</i>]</b> = investigación (<code>00. Planeacion/02-investigacion/</code>) · <b>[V]</b> = verificaciones · <b>[C]</b> = acta del Consejo (<code>00. Planeacion/04-consejo/</code>) · <b>[T]</b> = opciones técnicas (<code>00. Planeacion/03-arquitectura/opciones-tecnicas.md</code>)</p>
+
+<nav>
+<a href="#problema">1. Problema</a><a href="#quien">2. Para quién</a><a href="#roles">3. Cuentas y roles</a><a href="#pantallas">4. Pantallas</a><a href="#marca">5. Marca</a><a href="#modulos">6. Módulos</a><a href="#automatico">7. Lo que pasa solo</a><a href="#cobro">8. Cómo se cobra</a><a href="#planes">9. Planes y precios</a><a href="#versiones">10. Versiones</a><a href="#reglas">11. Reglas fijas</a><a href="#legal">12. Seguridad, datos y legal</a><a href="#tecnica">13. Camino técnico</a><a href="#verificar">14. Por verificar</a><a href="#decidir">15. Por decidir</a>
+</nav>
+
+<div class="card ok"><b>Cómo leer este documento.</b> Sale de la entrevista y de las decisiones de la persona; la investigación y el Consejo solo avisan de límites técnicos, legales o de mercado. Cuando se apruebe, de aquí salen la hoja de ruta y las fichas de cada etapa.</div>
+
+<h2 id="problema">1. El problema que resolvemos</h2>
+<ul>
+<li><b><<el dolor principal, en las palabras del cliente>></b> <<qué le cuesta hoy, en tiempo o plata, con la cifra más fuerte>> <span class="src">[E] [I-conversacion-real]</span></li>
+<li><b><<segundo dolor>></b> … <span class="src">[…]</span></li>
+</ul>
+
+<h2 id="quien">2. Para quién</h2>
+<div class="grid">
+<div class="card"><b><<Cliente que paga>></b><<quién es, qué tiene en la mano hoy>></div>
+<div class="card"><b><<Usuario final>></b><<quién es, qué hace en la app>></div>
+<div class="card"><b>A quién NO se le vende</b><<…>></div>
+</div>
+
+<h2 id="roles">3. Cuentas y roles</h2>
+<table>
+<tr><th>Tipo de cuenta</th><th>Qué ve y hace</th></tr>
+<tr><td><b><<Rol 1>></b></td><td><<…>></td></tr>
+<tr><td><b><<Rol 2>></b></td><td><<…>></td></tr>
+</table>
+
+<h2 id="pantallas">4. Las pantallas</h2>
+<h3><<Rol 1>>: qué ve al abrir, en orden</h3>
+<div class="grid">
+<div class="card"><b>1. <<Pantalla de inicio>></b><<qué muestra y por qué es la primera>></div>
+<div class="card"><b>2. <<…>></b><<…>></div>
+</div>
+
+<h2 id="marca">5. Marca y personalización</h2>
+<p><<si cada cliente ve su propia marca o la de la plataforma; logo, colores, dominio>></p>
+
+<h2 id="modulos">6. Módulos</h2>
+<p><span class="tag v1">MVP</span> · <span class="tag v2">V2</span> · <span class="tag v3">V3+</span></p>
+<table>
+<tr><th>Módulo</th><th>Qué hace · qué pasa solo · qué hace una persona</th><th>Ver.</th><th>Fuente</th></tr>
+<tr><td><b><<Módulo>></b></td><td><<…>></td><td><span class="tag v1">MVP</span></td><td class="src">[E]</td></tr>
+<tr><td><b><<Módulo>></b></td><td><<…>></td><td><span class="tag v2">V2</span></td><td class="src">[C]</td></tr>
+</table>
+
+<h2 id="automatico">7. Lo que pasa solo</h2>
+<ul>
+<li><<onboarding sin intervención humana: la persona entra por un enlace y se configura sola>></li>
+<li><<recordatorios, cobros, asignaciones, correos>></li>
+</ul>
+
+<h2 id="cobro">8. Cómo se cobra</h2>
+<div class="card ok"><b>Regla:</b> <<quién recibe la plata; qué nunca hace la plataforma con la plata de terceros>> <span class="src">[I-pagos]</span></div>
+<ol>
+<li><<paso a paso del cobro, del lado del cliente y del lado de la plataforma>></li>
+</ol>
+
+<h2 id="planes">9. Planes y precios</h2>
+<table>
+<tr><th>Plan</th><th>Qué incluye</th><th>Precio propuesto</th><th>Comparación</th></tr>
+<tr><td><<Plan>></td><td><<…>></td><td><<moneda y monto>> <span class="src">[I-competencia-y-precios]</span></td><td><<contra quién y por qué>></td></tr>
+</table>
+<p class="warn card">Por decidir: <<precios finales; quién decide>></p>
+
+<h2 id="versiones">10. Versiones</h2>
+<table>
+<tr><th>Versión</th><th>Qué entra</th><th>Se pasa a la siguiente cuando</th></tr>
+<tr><td><span class="tag v1">MVP</span></td><td><<módulos>></td><td><<gate por resultado, p. ej. N clientes pagando>></td></tr>
+<tr><td><span class="tag v2">V2</span></td><td><<…>></td><td><<…>></td></tr>
+<tr><td><span class="tag v3">V3+</span></td><td><<…>></td><td>—</td></tr>
+</table>
+
+<h2 id="reglas">11. Reglas fijas que no se reabren</h2>
+<ol>
+<li><<regla>> <span class="src">[E]</span></li>
+<li><<regla>> <span class="src">[C]</span></li>
+</ol>
+
+<h2 id="legal">12. Seguridad, datos y legal</h2>
+<ul>
+<li><b>Datos que se guardan:</b> <<de quién, cuáles son sensibles>></li>
+<li><b>Ley que aplica:</b> <<nombre, número, autoridad, qué exige>> <span class="src">[I-legal]</span></li>
+<li><b>Consentimiento y cifrado:</b> <<…>></li>
+<li><b>Nunca:</b> <<datos reales en el proyecto, secretos en el repositorio, datos sensibles en registros o terceros>></li>
+<li class="warn card">Todo lo legal lo revisa un abogado del país antes de lanzar; nada de este documento es asesoría legal.</li>
+</ul>
+
+<h2 id="tecnica">13. Camino técnico</h2>
+<p><<la opción elegida explicada para quien no programa: qué es cada pieza y por qué; costo mensual con fuente>> <span class="src">[T]</span></p>
+<ul>
+<li><b>Skills que lo cubren:</b> <<nombre — URL, del catálogo>></li>
+</ul>
+
+<h2 id="verificar">14. Lo que hay que verificar antes de construir</h2>
+<table>
+<tr><th>Riesgo</th><th>Qué se verifica y cómo</th><th>Qué cambia si falla</th></tr>
+<tr><td><<riesgo técnico, legal o de mercado marcado «no verificado»>></td><td><<…>></td><td><<…>></td></tr>
+</table>
+<p class="src">Cada fila se vuelve una prueba de concepto en la etapa 02 de la hoja de ruta.</p>
+
+<h2 id="decidir">15. Por decidir</h2>
+<table>
+<tr><th>Decisión</th><th>Quién decide</th><th>Qué bloquea</th></tr>
+<tr><td><<…>></td><td><<…>></td><td><<…>></td></tr>
+</table>
+
+<h2>Fuentes</h2>
+<ul>
+<li><code>00. Planeacion/01-entrevista/entrevista.md</code></li>
+<li><code>00. Planeacion/02-investigacion/</code> — <<lista de reportes>></li>
+<li><code>00. Planeacion/03-arquitectura/opciones-tecnicas.md</code></li>
+<li><code>00. Planeacion/04-consejo/acta-consejo-<<fecha>>.md</code></li>
+</ul>
+
+</div></body></html>
