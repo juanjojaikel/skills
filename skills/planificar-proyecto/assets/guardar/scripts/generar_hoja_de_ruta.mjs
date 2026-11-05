@@ -6,7 +6,7 @@
 //   ... --json <ruta> --html <ruta>   otras rutas (p. ej. antes de crear la estructura del proyecto)
 import fs from "node:fs";
 import path from "node:path";
-import { RUTA_HOJA, leerJson, escribirTexto, args, salida } from "./_comun.mjs";
+import { RUTA_HOJA, leerJson, escribirTexto, args, salida, revisarOrden } from "./_comun.mjs";
 
 salida();
 
@@ -127,6 +127,11 @@ function main() {
   const rutaHtml = typeof a.html === "string" ? path.resolve(a.html) : path.join(path.dirname(rutaJson), "hoja-de-ruta.html");
   const hr = leerJson(rutaJson, null);
   if (!hr || !Array.isArray(hr.etapas)) { console.log(`No se pudo leer ${rutaJson} (debe tener "etapas").`); process.exit(2); }
+  // El orden se revisa aquí porque aquí se aprueba: corregirlo después obliga a rehacer fichas.
+  const orden = revisarOrden(hr);
+  for (const x of orden.problemas) console.log(`✗ ${x}`);
+  for (const x of orden.avisos) console.log(`· ${x}`);
+  console.log(`ORDEN: ${orden.problemas.length ? `${orden.problemas.length} PROBLEMA(S): corríjalos en el JSON antes de pedir la aprobación` : "POSIBLE"}${orden.avisos.length ? ` · ${orden.avisos.length} aviso(s)` : ""}`);
   const nuevo = bloque(hr);
   const html = fs.existsSync(rutaHtml) ? fs.readFileSync(rutaHtml, "utf8") : null;
   if (a.comprobar) {

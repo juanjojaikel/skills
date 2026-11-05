@@ -55,7 +55,7 @@ function escribir(p, texto) {
   const t = texto.replace(/\r\n/g, "\n");
   fs.writeFileSync(p, t, "utf8");
   creados.push(rel(p));
-  const n = rel(p).startsWith(".claude/") ? 0 : (t.match(/<<[^>]{1,120}>>/g) || []).length;
+  const n = rel(p).startsWith(".claude/") ? 0 : (t.match(/(?<!`)<<[^<>]{1,600}>>/g) || []).length;
   if (n) marcas.set(rel(p), n);
 }
 function carpeta(p) {
@@ -81,13 +81,41 @@ function copiarCarpeta(desde, hasta) {
 const personas = (proy.personas || []).map((p) => (typeof p === "string" ? { nombre: p, rol: "" } : p));
 // «La dueña» → «la dueña» cuando el nombre empieza con artículo (va en medio de una frase); los nombres propios no cambian.
 const enFrase = (n) => n.replace(/^(La|El|Los|Las|O|A|Os|As|The)\s/, (m) => m.toLowerCase());
+// «la dueña» → «La dueña» donde el nombre abre una celda o una lista.
+const mayus = (t) => (t ? t[0].toLocaleUpperCase() + t.slice(1) : t);
+const celda = (t) => String(t).replace(/\s*\n\s*/g, " ").replace(/\|/g, "/");
+// Qué es cada archivo que ya está en una carpeta: los conocidos por nombre; los demás, por su título.
+const DESCRIPCIONES = {
+  "vision-producto.html": "La visión del producto: qué se construye y por qué. Es la fuente de verdad.",
+  "hoja-de-ruta.json": "Las etapas y subetapas; de aquí salen las fichas y el HTML.",
+  "hoja-de-ruta.html": "La hoja de ruta para leer en el navegador; se regenera desde el JSON.",
+  "catalogo-skills-urls.json": "El catálogo de skills con su URL, en datos.",
+  "catalogo-skills-urls.md": "El catálogo de skills con su URL, para leer.",
+  "entrevista.md": "Las respuestas de la entrevista de arranque.",
+  "_verificaciones.md": "La verificación adversarial de las afirmaciones de más peso.",
+  "_conciliacion.md": "Las contradicciones entre reportes y cuál dato quedó vigente.",
+  "opciones-tecnicas.md": "Los caminos técnicos con costo y la recomendación.",
+};
+function describir(dir, nombre) {
+  if (DESCRIPCIONES[nombre]) return DESCRIPCIONES[nombre];
+  const p = path.join(dir, nombre);
+  if (fs.statSync(p).isDirectory()) return `Carpeta con ${fs.readdirSync(p).length} elemento(s).`;
+  const ext = path.extname(nombre).toLowerCase();
+  if (ext === ".md" || ext === ".html") {
+    const t = fs.readFileSync(p, "utf8");
+    const m = ext === ".md" ? /^#\s+(.+)$/m.exec(t) : /<title>([^<]+)<\/title>/i.exec(t);
+    if (m) return m[1].replace(/`/g, "").trim() + ".";
+  }
+  return `Archivo ${ext.slice(1) || "sin extensión"} de esta subetapa.`;
+}
+const archivosDe = (dir) => (fs.existsSync(dir) ? fs.readdirSync(dir).filter((n) => n !== "LEEME.md" && !n.startsWith(".")).sort() : []);
 const nombres = personas.map((p) => enFrase(p.nombre));
 const usuario = nombres.length === 0 ? "la persona dueña del proyecto" : nombres.length === 1 ? nombres[0] : nombres.slice(0, -1).join(", ") + " y " + nombres[nombres.length - 1];
 const valida = nombres.length > 1 ? "validan" : "valida";
 const personasTabla = personas.length
-  ? personas.map((p) => `| ${p.nombre} | ${p.rol || "<<rol>>"} | ${p.hace || "<<qué hace>>"} | ${p.valida || "<<qué valida>>"} |`).join("\n")
+  ? personas.map((p) => `| ${mayus(p.nombre)} | ${p.rol || "<<rol>>"} | ${p.hace || "<<qué hace>>"} | ${p.valida || "<<qué valida>>"} |`).join("\n")
   : "| <<nombre>> | <<rol>> | <<qué hace>> | <<qué valida>> |";
-const personasLista = personas.length ? personas.map((p) => `${p.nombre} (${p.rol || "rol por definir"})`).join(" · ") : "<<personas y roles>>";
+const personasLista = personas.length ? personas.map((p) => `${mayus(p.nombre)} (${p.rol || "rol por definir"})`).join(" · ") : "<<personas y roles>>";
 const codigo = proy.carpeta_codigo || hoja.carpeta_codigo || "";
 const primera = hoja.etapas.find((e) => e.n !== "00" && (e.subetapas || []).length) || hoja.etapas[0];
 const primeraSub = primera && primera.subetapas && primera.subetapas[0] ? primera.subetapas[0] : null;
@@ -142,6 +170,75 @@ for (const [archivo, destino] of [["CLAUDE.md", "CLAUDE.md"], ["ESTADO.md", "EST
 escribir(path.join(raiz, "proyecto.json"), JSON.stringify({ ...proy, carpeta_codigo: codigo || undefined }, null, 2) + "\n");
 carpeta(path.join(raiz, "99. Archivo"));
 
+// ---- visión: si todavía no existe, el esqueleto desde la plantilla con sus marcas ----
+const rutaVision = path.join(raiz, "00. Planeacion", "07-vision-producto", "vision-producto.html");
+if (!fs.existsSync(rutaVision)) escribir(rutaVision, plantilla("vision-producto.html", { ...valores, BORRADOR: "1" }));
+
+// ---- catálogo inicial de skills (desde la hoja de ruta) ----
+const dirCat = path.join(raiz, "00. Planeacion", "06-herramientas-claude-code");
+const catJson = path.join(dirCat, "catalogo-skills-urls.json");
+// Todas las skills que la hoja cita, de etapa y de subetapa.
+function skillsDeLaHoja() {
+  const vistos = new Map();
+  for (const e of hoja.etapas) {
+    for (const s of [...(e.skills || []), ...(e.subetapas || []).flatMap((x) => (Array.isArray(x.skills) ? x.skills : []))]) {
+      if (!s.url) continue;
+      const k = s.url.replace(/\/+$/, "");
+      if (!vistos.has(k)) vistos.set(k, { nombre: s.nombre, url: k, tipo: "por-instalar", etapas: [], origen: `hoja-de-ruta.json ${valores.VERSION_HOJA}`, comprobada: false });
+      if (!vistos.get(k).etapas.includes(e.carpeta)) vistos.get(k).etapas.push(e.carpeta);
+    }
+  }
+  return vistos;
+}
+if (!fs.existsSync(catJson)) {
+  const cat = [...skillsDeLaHoja().values()];
+  escribir(catJson, JSON.stringify(cat, null, 2) + "\n");
+  escribir(path.join(dirCat, "catalogo-skills-urls.md"), `# Catálogo de skills y herramientas → URL (${proy.nombre})
+
+**Fecha:** ${FECHA}. Toda skill o repositorio que se cite en una ficha lleva aquí su URL exacta. Las nuevas se agregan con
+\`node .claude/skills/guardar/scripts/verificar_urls_github.mjs --agregar <url>\` (comprueba en GitHub que existe).
+Datos completos en \`catalogo-skills-urls.json\`.
+
+**Total: ${cat.length} entradas.**
+
+| Nombre | URL | Tipo | Etapas |
+|---|---|---|---|
+${cat.map((c) => `| ${c.nombre} | ${c.url} | ${c.tipo} | ${c.etapas.join(", ")} |`).join("\n")}
+`);
+} else {
+  // El catálogo ya existe (lo escribió la lente de herramientas): se le agrega lo que la hoja cita y falta. Nada se pisa.
+  const cat = leerJson(catJson);
+  const ya = new Set(cat.map((c) => String(c.url || "").replace(/\/+$/, "").toLowerCase()));
+  const nuevas = [...skillsDeLaHoja().values()].filter((c) => !ya.has(c.url.toLowerCase()));
+  if (nuevas.length) {
+    fs.writeFileSync(catJson, JSON.stringify([...cat, ...nuevas], null, 2) + "\n", "utf8");
+    const catMd = path.join(dirCat, "catalogo-skills-urls.md");
+    if (fs.existsSync(catMd)) {
+      let md = fs.readFileSync(catMd, "utf8").replace(/\*\*Total: \d+ entradas\.\*\*/, `**Total: ${cat.length + nuevas.length} entradas.**`);
+      md = md.replace(/\s*$/, "\n") + `\n## Citadas en la hoja de ruta (${FECHA}), sin comprobar\n\n| Nombre | URL | Tipo | Etapas |\n|---|---|---|---|\n` + nuevas.map((c) => `| ${c.nombre} | ${c.url} | ${c.tipo} | ${c.etapas.join(", ")} |`).join("\n") + "\n";
+      fs.writeFileSync(catMd, md, "utf8");
+    }
+    console.log(`Catálogo: se agregaron ${nuevas.length} skill(s) que la hoja de ruta cita, sin comprobar. Compruébelas con verificar_urls_github.mjs --agregar.`);
+  }
+}
+
+// ---- la skill /guardar ----
+const destinoGuardar = path.join(raiz, ".claude", "skills", "guardar");
+const skillMd = fs.readFileSync(path.join(GUARDAR, "SKILL.md"), "utf8");
+let skillLleno = skillMd;
+for (const [k, v] of Object.entries(valores)) skillLleno = skillLleno.split(`{{${k}}}`).join(v);
+escribir(path.join(destinoGuardar, "SKILL.md"), skillLleno);
+copiarCarpeta(path.join(GUARDAR, "scripts"), path.join(destinoGuardar, "scripts"));
+
+// ---- hoja-de-ruta.html: si no existe, se genera desde el JSON (CLAUDE.md y README.md lo citan) ----
+const rutaHtml = path.join(path.dirname(rutaHoja), "hoja-de-ruta.html");
+if (!fs.existsSync(rutaHtml)) {
+  try {
+    execFileSync(process.execPath, [path.join(destinoGuardar, "scripts", "generar_hoja_de_ruta.mjs"), "--json", rutaHoja, "--html", rutaHtml], { cwd: raiz, stdio: ["ignore", "pipe", "pipe"] });
+    if (fs.existsSync(rutaHtml)) creados.push(rel(rutaHtml));
+  } catch (e) { console.log("No se pudo generar hoja-de-ruta.html: " + String(e.stderr || e.message).trim().slice(0, 200)); }
+}
+
 // ---- etapas y subetapas ----
 for (const e of hoja.etapas) {
   const ed = path.join(raiz, e.carpeta);
@@ -152,10 +249,15 @@ for (const e of hoja.etapas) {
   const esPlaneacion = e.n === "00";
   const estadoEtapa = esPlaneacion ? "🟢 terminada (referencia)" : e === primera ? "🟡 activa" : "⚪ sin empezar";
   const tablaSub = subs.length
-    ? subs.map((s) => `| ${s.carpeta} | ${esPlaneacion ? "🟢" : "⚪"} | ${esPlaneacion ? "<<qué hay>>" : "Nada todavía"} | ${esPlaneacion ? "— (se consulta)" : "<<siguiente>>"} |`).join("\n")
+    ? subs.map((s) => {
+      const hay = archivosDe(path.join(ed, s.carpeta));
+      const queHay = esPlaneacion ? (hay.length ? hay.join(", ") : "Sin archivos") : "Nada todavía";
+      const siguiente = esPlaneacion ? "— (se consulta)" : e === primera && s === primeraSub ? "Arrancar: leer su ficha" : `Entra cuando: ${s.entra || e.entra || "lo diga la etapa"}`;
+      return `| ${s.carpeta} | ${esPlaneacion ? "🟢" : "⚪"} | ${celda(queHay)} | ${celda(siguiente)} |`;
+    }).join("\n")
     : "| (sin subetapas) | — | — | — |";
   const fichaSub = subs.length
-    ? subs.map((s) => `| \`${s.carpeta}/\` | ${s.titulo} | ${s.descripcion} | ${s.entra || "<<entra cuando>>"} |`).join("\n")
+    ? subs.map((s) => `| \`${s.carpeta}/\` | ${s.titulo} | ${s.descripcion} | ${s.entra || e.entra || "<<entra cuando>>"} |`).join("\n")
     : "| (sin subetapas) | — | — | — |";
 
   escribir(path.join(ed, "ESTADO.md"), `# ESTADO — ${e.carpeta}
@@ -174,7 +276,7 @@ ${tablaSub}
 - Nada a medias.
 
 ## ▶️ Siguiente paso
-${esPlaneacion ? "Ninguno: la etapa es referencia y se consulta. El siguiente paso del proyecto está en el `ESTADO.md` raíz." : e === primera && primeraSub ? `**${primeraSub.carpeta}.** Se lee \`${e.carpeta}/${primeraSub.carpeta}/LEEME.md\`. Nombre del chat: \`${nombreChat}\`.` : `Entra cuando: ${(e.entra || "<<…>>").replace(/\.\s*$/, "")}.`}
+${esPlaneacion ? "Ninguno: la etapa es referencia y se consulta. El siguiente paso del proyecto está en el `ESTADO.md` raíz." : e === primera && primeraSub ? `**${primeraSub.carpeta}.** Se lee \`${e.carpeta}/${primeraSub.carpeta}/LEEME.md\`. Nombre del chat: \`${nombreChat}\`.` : `Entra cuando: ${(e.entra || "<<qué tiene que existir antes>>").replace(/\.\s*$/, "")}.`}
 
 ## Pendientes (con dueño)
 - Ninguno todavía.
@@ -211,15 +313,14 @@ Cada subetapa lista en su ficha el subconjunto que usa, más las del catálogo q
 ## Qué lee Claude para arrancar la etapa
 - \`ESTADO.md\` (raíz; se carga solo) y \`${e.carpeta}/ESTADO.md\`.
 - \`00. Planeacion/07-vision-producto/hoja-de-ruta.json\` — entrada «${e.carpeta}» y los ciclos.
-- \`00. Planeacion/07-vision-producto/vision-producto.html\` — ${e.vision || "<<las secciones que esta etapa usa>>"}.
+- \`00. Planeacion/07-vision-producto/vision-producto.html\` — ${e.vision || (esPlaneacion ? "completa, según lo que se consulte" : "<<las secciones que esta etapa usa>>")}.
 - El \`LEEME.md\` de la subetapa que toque.
 `);
 
   for (const s of subs) {
     const sd = path.join(ed, s.carpeta);
     carpeta(sd);
-    const presentes = fs.readdirSync(sd).filter((n) => n !== "LEEME.md" && !n.startsWith(".")).sort();
-    const archivosLineas = ["- `LEEME.md` — esta ficha.", ...presentes.map((n) => "- `" + n + "` — <<qué es, para qué sirve>>")].join("\n");
+    const archivosLineas = ["- `LEEME.md` — esta ficha.", ...archivosDe(sd).map((n) => "- `" + n + "` — " + describir(sd, n))].join("\n");
     const lista2 = (v) => (Array.isArray(v) ? v : v ? [v] : []);
     const skillsSub = Array.isArray(s.skills) ? s.skills : (e.skills || []);
     const skillsLineas = skillsSub.length
@@ -227,20 +328,24 @@ Cada subetapa lista en su ficha el subconjunto que usa, más las del catálogo q
       : Array.isArray(s.skills) ? "- Ninguna específica: se usan las de la etapa (ver `" + e.carpeta + "/LEEME.md`)." : "- <<las del catálogo que sirven aquí, con URL exacta>>";
     const leeLineas = [
       "- `" + e.carpeta + "/ESTADO.md` y este archivo.",
-      "- `00. Planeacion/07-vision-producto/vision-producto.html` — " + (s.vision || e.vision || "<<secciones que aplican>>") + ".",
+      "- `00. Planeacion/07-vision-producto/vision-producto.html` — " + (s.vision || e.vision || (esPlaneacion ? "completa, según lo que se consulte" : "<<secciones que aplican>>")) + ".",
       ...lista2(s.lee).map((x) => "- " + x),
     ];
-    if (!lista2(s.lee).length) leeLineas.push("- <<archivos de 00. Planeacion o de etapas anteriores que esta subetapa necesita; los que todavía no existen van entre «comillas angulares», no entre acentos graves>>");
-    const comoSub = esPlaneacion
-      ? "Terminada; se consulta. Si hace falta ampliarla: 1) plan corto y OK · 2) ejecutar · 3) verificar · 4) /guardar."
-      : lista2(s.como).length ? lista2(s.como).map((x, i) => `${i + 1}. ${x}`).join("\n") : "<<los pasos del ciclo que aplican (módulo con código o sin código), con lo concreto de esta subetapa>>";
-    const necesitaSub = lista2(s.necesita).length ? lista2(s.necesita).map((x) => "- " + x).join("\n") : "- <<validación, firma, pago o credencial que solo esa persona puede dar; o «Nada pendiente»>>";
+    if (!lista2(s.lee).length && !esPlaneacion) leeLineas.push("- <<archivos de 00. Planeacion o de etapas anteriores que esta subetapa necesita; los que todavía no existen van entre «comillas angulares», no entre acentos graves>>");
+    const comoSub = lista2(s.como).length
+      ? lista2(s.como).map((x, i) => `${i + 1}. ${x}`).join("\n")
+      : esPlaneacion
+        ? "Terminada; se consulta. Si hace falta ampliarla: 1) plan corto y OK · 2) ejecutar · 3) verificar · 4) /guardar."
+        : "<<los pasos del ciclo que aplican (módulo con código o sin código), con lo concreto de esta subetapa>>";
+    const necesitaSub = lista2(s.necesita).length
+      ? lista2(s.necesita).map((x) => "- " + x).join("\n")
+      : esPlaneacion ? "- Nada pendiente: es referencia." : "- <<validación, firma, pago o credencial que solo esa persona puede dar; o «Nada pendiente»>>";
     escribir(path.join(sd, "LEEME.md"), `# ${e.carpeta} / ${s.carpeta} — ${s.titulo}
 
-**Objetivo:** ${s.objetivo || "<<una frase: qué queda resuelto al terminar>>"}
+**Objetivo:** ${s.objetivo || (esPlaneacion ? `Dejar por escrito lo de «${s.titulo}» para consultarlo después.` : "<<una frase: qué queda resuelto al terminar>>")}
 **Qué se entrega:** ${s.descripcion || "<<qué se entrega>>"}
-**Terminada cuando:** ${s.terminada || "<<criterio verificable: qué archivo, pantalla o prueba existe>>"}
-**Entra cuando:** ${s.entra || "<<qué tiene que existir antes>>"}
+**Terminada cuando:** ${s.terminada || (esPlaneacion ? "Cumplido al crear la estructura del proyecto." : "<<criterio verificable: qué archivo, pantalla o prueba existe>>")}
+**Entra cuando:** ${s.entra || e.entra || "<<qué tiene que existir antes>>"}
 
 > Rutas relativas a la raíz del proyecto.
 
@@ -260,54 +365,6 @@ ${necesitaSub}
 ${archivosLineas}
 `);
   }
-}
-
-// ---- visión: si todavía no existe, el esqueleto desde la plantilla con sus marcas ----
-const rutaVision = path.join(raiz, "00. Planeacion", "07-vision-producto", "vision-producto.html");
-if (!fs.existsSync(rutaVision)) escribir(rutaVision, plantilla("vision-producto.html", { ...valores, BORRADOR: "1" }));
-
-// ---- catálogo inicial de skills (desde la hoja de ruta) ----
-const dirCat = path.join(raiz, "00. Planeacion", "06-herramientas-claude-code");
-const catJson = path.join(dirCat, "catalogo-skills-urls.json");
-if (!fs.existsSync(catJson)) {
-  const vistos = new Map();
-  for (const e of hoja.etapas) for (const s of e.skills || []) {
-    if (!s.url) continue;
-    const k = s.url.replace(/\/+$/, "");
-    if (!vistos.has(k)) vistos.set(k, { nombre: s.nombre, url: k, tipo: "por-instalar", etapas: [], origen: `hoja-de-ruta.json ${valores.VERSION_HOJA}` });
-    vistos.get(k).etapas.push(e.carpeta);
-  }
-  const cat = [...vistos.values()];
-  escribir(catJson, JSON.stringify(cat, null, 2) + "\n");
-  escribir(path.join(dirCat, "catalogo-skills-urls.md"), `# Catálogo de skills y herramientas → URL (${proy.nombre})
-
-**Fecha:** ${FECHA}. Toda skill o repositorio que se cite en una ficha lleva aquí su URL exacta. Las nuevas se agregan con
-\`node .claude/skills/guardar/scripts/verificar_urls_github.mjs --agregar <url>\` (comprueba en GitHub que existe).
-Datos completos en \`catalogo-skills-urls.json\`.
-
-**Total: ${cat.length} entradas.**
-
-| Nombre | URL | Tipo | Etapas |
-|---|---|---|---|
-${cat.map((c) => `| ${c.nombre} | ${c.url} | ${c.tipo} | ${c.etapas.join(", ")} |`).join("\n")}
-`);
-}
-
-// ---- la skill /guardar ----
-const destinoGuardar = path.join(raiz, ".claude", "skills", "guardar");
-const skillMd = fs.readFileSync(path.join(GUARDAR, "SKILL.md"), "utf8");
-let skillLleno = skillMd;
-for (const [k, v] of Object.entries(valores)) skillLleno = skillLleno.split(`{{${k}}}`).join(v);
-escribir(path.join(destinoGuardar, "SKILL.md"), skillLleno);
-copiarCarpeta(path.join(GUARDAR, "scripts"), path.join(destinoGuardar, "scripts"));
-
-// ---- hoja-de-ruta.html: si no existe, se genera desde el JSON (CLAUDE.md y README.md lo citan) ----
-const rutaHtml = path.join(path.dirname(rutaHoja), "hoja-de-ruta.html");
-if (!fs.existsSync(rutaHtml)) {
-  try {
-    execFileSync(process.execPath, [path.join(destinoGuardar, "scripts", "generar_hoja_de_ruta.mjs"), "--json", rutaHoja, "--html", rutaHtml], { cwd: raiz, stdio: ["ignore", "pipe", "pipe"] });
-    if (fs.existsSync(rutaHtml)) creados.push(rel(rutaHtml));
-  } catch (e) { console.log("No se pudo generar hoja-de-ruta.html: " + String(e.stderr || e.message).trim().slice(0, 200)); }
 }
 
 // ---- ESTADO.md raíz con la fecha más nueva (cambios_sesion.mjs mide desde ahí) ----

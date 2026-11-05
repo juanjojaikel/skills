@@ -3,7 +3,9 @@
 // Uso (desde cualquier carpeta):
 //   node ".../verificar_urls_github.mjs" --informe fichas-informe.json      las URLs que verificar_fichas.mjs marcó
 //   node ".../verificar_urls_github.mjs" https://github.com/owner/repo/tree/main/skills/x ...
-//   ... --agregar      las que existen se agregan a catalogo-skills-urls.json y .md (tipo «sub-skill» o «repo-github»)
+//   ... --agregar      las que existen se agregan a catalogo-skills-urls.json y .md (tipo «sub-skill» o «repositorio»)
+//                      con «comprobada» = la fecha; a las que ya estaban solo se les actualiza ese campo
+//   ... --raiz "<carpeta del proyecto>"   para correrlo desde la skill antes de que exista la estructura (lente 8)
 //
 // Necesita `gh` con sesión iniciada. Solo lee de GitHub; en disco solo escribe el catálogo si se pasa --agregar.
 import fs from "node:fs";
@@ -17,6 +19,7 @@ function gh(argsGh) {
   try {
     return [0, execFileSync("gh", ["api", ...argsGh], { encoding: "utf8", stdio: ["ignore", "pipe", "pipe"], timeout: 60000 }).trim()];
   } catch (e) {
+    if (e.code === "ENOENT") return [127, "gh no está instalado: queda sin comprobar"];
     return [e.status || 1, String((e.stdout || "") + (e.stderr || "")).trim()];
   }
 }
@@ -37,7 +40,8 @@ function existeUrl(url) {
 function main() {
   const a = args();
   const urls = new Map();
-  for (const u of a._) urls.set(u.replace(/\/+$/, ""), new Set());
+  // «--agregar url1 url2»: el lector de argumentos toma url1 como valor de --agregar; también es una URL.
+  for (const u of [...a._, ...(typeof a.agregar === "string" ? [a.agregar] : [])]) urls.set(u.replace(/\/+$/, ""), new Set());
   if (typeof a.informe === "string") {
     const inf = leerJson(a.informe, {});
     for (const [etapa, datos] of Object.entries(inf || {})) {
@@ -58,19 +62,30 @@ function main() {
   const cat = leerJson(RUTA_CATALOGO_JSON, []) || [];
   const ya = new Set(cat.map((e) => String((e && e.url) || "").replace(/\/+$/, "")));
   const nuevas = [];
+  let actualizadas = 0;
   for (const u of [...urls.keys()].sort()) {
     const [ok, detalle] = existeUrl(u);
     console.log(`${ok ? "✓" : "✗"} ${u}  (${detalle.slice(0, 90)})`);
+    if (a.agregar && ya.has(u)) {
+      const entrada = cat.find((e) => String((e && e.url) || "").replace(/\/+$/, "") === u);
+      const valor = ok ? fechaIso() : false;
+      if (entrada.comprobada !== valor) { entrada.comprobada = valor; actualizadas++; }
+    }
     if (ok && a.agregar && !ya.has(u)) {
       const [, owner, repo, , ruta] = RX.exec(u);
       nuevas.push({
         nombre: `${owner}/${repo}${ruta ? ` › ${ruta}` : ""}`,
         url: u,
         origen: `gh api ${fechaIso()}: comprobado que existe (${detalle.slice(0, 80)})`,
-        tipo: ruta ? "sub-skill" : "repo-github",
+        tipo: ruta ? "sub-skill" : "repositorio",
         etapas: [...urls.get(u)].sort(),
+        comprobada: fechaIso(),
       });
     }
+  }
+  if (actualizadas && !nuevas.length) {
+    escribirTexto(RUTA_CATALOGO_JSON, JSON.stringify(cat, null, 2) + "\n");
+    console.log(`\nCatálogo: campo «comprobada» actualizado en ${actualizadas} entrada(s).`);
   }
   if (nuevas.length) {
     cat.push(...nuevas);

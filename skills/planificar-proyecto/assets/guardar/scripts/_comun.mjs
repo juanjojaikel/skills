@@ -1,11 +1,15 @@
 // Funciones compartidas por los scripts de /guardar. Sin dependencias: solo Node (18 o posterior).
-// La raíz del proyecto es la carpeta que contiene `.claude/skills/guardar/scripts/` (cuatro niveles arriba).
+// La raíz del proyecto es la carpeta que contiene `.claude/skills/guardar/scripts/` (cuatro niveles arriba). Con
+// `--raiz <carpeta>` se puede correr desde la skill planificar-proyecto antes de que exista la estructura.
 import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { execFileSync } from "node:child_process";
 
-export const RAIZ = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..", "..", "..", "..");
+const iRaiz = process.argv.indexOf("--raiz");
+export const RAIZ = iRaiz >= 0 && process.argv[iRaiz + 1]
+  ? path.resolve(process.argv[iRaiz + 1])
+  : path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..", "..", "..", "..");
 export const ESTADO = "ESTADO.md";
 export const DIR_PLANEACION = path.join(RAIZ, "00. Planeacion");
 export const RUTA_HOJA = path.join(DIR_PLANEACION, "07-vision-producto", "hoja-de-ruta.json");
@@ -154,6 +158,114 @@ export function registros() {
     if ((nombre === ESTADO || nombre === "LEEME.md") && !partes.includes(".claude") && !(codigo && partes[0] === codigo && partes.length > 2)) out.push(p);
   }
   return [...new Set(out)].filter(existe);
+}
+
+/** Marcas <<…>> sin llenar, aunque ocupen varias líneas. Las que van entre acentos graves son documentación. */
+export function marcasEn(texto) {
+  const out = [];
+  for (const m of texto.matchAll(/(?<!`)<<[^<>]{1,600}>>/g)) {
+    out.push({ linea: texto.slice(0, m.index).split("\n").length, texto: m[0].replace(/\s+/g, " ").slice(0, 90) });
+  }
+  return out;
+}
+
+/**
+ * Revisa el orden de la hoja de ruta leyendo las referencias de cada «entra» (`07/01`, `etapa 07`, `etapas 04 a 06`,
+ * `07. Modulos`, `04-entornos`). Problemas: citar algo que no existe, o un ciclo (A espera a B y B espera a A).
+ * Avisos: una subetapa que espera a otra de número mayor, que puede ser a propósito.
+ */
+export function revisarOrden(hr) {
+  const etapas = hr.etapas || [], problemas = [], avisos = [];
+  const idSub = (e, s) => `${e.n}/${String(s.carpeta).slice(0, 2)}`;
+  const nodosDe = new Map(), porCarpeta = new Map(), nodos = new Set();
+  for (const e of etapas) {
+    const subs = e.subetapas || [];
+    const ids = subs.length ? subs.map((s) => idSub(e, s)) : [`${e.n}/--`];
+    nodosDe.set(e.n, ids);
+    ids.forEach((i) => nodos.add(i));
+    for (const s of subs) {
+      if (!porCarpeta.has(s.carpeta)) porCarpeta.set(s.carpeta, []);
+      porCarpeta.get(s.carpeta).push({ id: idSub(e, s), n: e.n });
+    }
+  }
+  // Devuelve [{ destinos, inverso, excluye }]: «antes de X» invierte la flecha; «sin esperar X» no crea ninguna y, en una
+  // subetapa, le quita lo que heredaría de su etapa (la subetapa de legal no espera a los módulos aunque la etapa sí).
+  const referencias = (texto, etapa, donde) => {
+    const out = [];
+    const t = String(texto || "");
+    const sentido = (i) => {
+      const previo = t.slice(0, i).split(/[.;]/).pop().toLowerCase();
+      if (/no depende|no dependen|sin esperar|independiente|no necesita|no requiere/.test(previo)) return "nada";
+      const antes = Math.max(previo.lastIndexOf("antes de"), previo.lastIndexOf("antes que"), previo.lastIndexOf("before"));
+      const despues = Math.max(...["tras", "después", "despues", "cuando", "al cerrar", "after", "when"].map((p) => previo.lastIndexOf(p)));
+      return antes > despues ? "inverso" : "normal";
+    };
+    const agregar = (i, destinos, cita) => {
+      const s = sentido(i);
+      if (s === "nada") { out.push({ destinos, excluye: true }); return; }
+      if (!destinos.length) { problemas.push(`${donde} cita ${cita}, que no existe en la hoja de ruta`); return; }
+      out.push({ destinos, inverso: s === "inverso" });
+    };
+    for (const m of t.matchAll(/(?<![\d/])(\d{2})\/(\d{2})(?![\d/])/g)) {
+      const id = `${m[1]}/${m[2]}`;
+      agregar(m.index, nodos.has(id) ? [id] : [], id);
+    }
+    for (const m of t.matchAll(/\b(?:etapas?|stages?)\s+(\d{2}(?:\s*(?:,|y|e|o|a|and|to|-|–)\s*\d{2})*)(?![\d/])/gi)) {
+      const nums = m[1].match(/\d{2}/g);
+      const rango = nums.length === 2 && /\d\s*(?:a|to|-|–)\s*\d/.test(m[1]);
+      const lista = rango ? Array.from({ length: Math.max(0, +nums[1] - +nums[0] + 1) }, (_, k) => String(+nums[0] + k).padStart(2, "0")).filter((n) => nodosDe.has(n)) : nums;
+      for (const n of lista) if (n !== etapa.n) agregar(m.index, nodosDe.get(n) || [], `la etapa ${n}`);
+    }
+    for (const m of t.matchAll(/\b(\d{2})\.\s+\p{Lu}/gu)) {
+      if (m[1] !== etapa.n && nodosDe.has(m[1])) agregar(m.index, nodosDe.get(m[1]), `la etapa ${m[1]}`);
+    }
+    for (const m of t.matchAll(/\b\d{2}-[a-z0-9]+(?:-[a-z0-9]+)*\b/g)) {
+      const c = porCarpeta.get(m[0]);
+      if (!c) continue;
+      const local = c.find((x) => x.n === etapa.n);
+      if (local || c.length === 1) agregar(m.index, [(local || c[0]).id], m[0]);
+    }
+    return out;
+  };
+  const flechas = new Map([...nodos].map((n) => [n, new Set()]));
+  for (const e of etapas) {
+    const subs = (e.subetapas || []).length ? e.subetapas : [{ carpeta: "--", entra: "" }];
+    const deEtapa = referencias(e.entra, e, `La etapa ${e.n}`);
+    for (const s of subs) {
+      const id = `${e.n}/${String(s.carpeta).slice(0, 2)}`;
+      const propias = referencias(s.entra, e, id);
+      const excluidos = new Set(propias.filter((r) => r.excluye).flatMap((r) => r.destinos));
+      for (const r of [...deEtapa, ...propias]) {
+        if (r.excluye) continue;
+        for (const d of r.destinos) {
+          if (d === id || (excluidos.has(d) && deEtapa.includes(r))) continue;
+          if (r.inverso) flechas.get(d).add(id); else flechas.get(id).add(d);
+        }
+      }
+    }
+  }
+  for (const [a, destinos] of flechas) {
+    for (const d of destinos) {
+      if (d.slice(0, 2) > a.slice(0, 2)) avisos.push(`${a} espera a ${d}, de número mayor: confirme que el orden es a propósito`);
+    }
+  }
+  // Ciclos: búsqueda en profundidad; se reporta cada ciclo una vez, por el conjunto de sus nodos.
+  const estado = new Map(), pila = [], vistos = new Set();
+  const visitar = (n) => {
+    estado.set(n, 1);
+    pila.push(n);
+    for (const d of flechas.get(n) || []) {
+      if (estado.get(d) === 1) {
+        const ciclo = pila.slice(pila.indexOf(d));
+        const clave = [...ciclo].sort().join(",");
+        if (!vistos.has(clave)) { vistos.add(clave); problemas.push(`Orden imposible: ${[...ciclo, d].join(" espera a ")}`); }
+      } else if (!estado.has(d)) visitar(d);
+    }
+    pila.pop();
+    estado.set(n, 2);
+  };
+  for (const n of nodos) if (!estado.has(n)) visitar(n);
+  return { problemas: [...new Set(problemas)], avisos: [...new Set(avisos)] };
 }
 
 /** Lee los argumentos `--clave valor` y las banderas `--bandera`. */

@@ -69,10 +69,10 @@
         "El repositorio nace con las reglas de seguridad: versiones fijadas, secretos fuera del código, pruebas en cada push."
       ],
       "subetapas": [
-        {"carpeta": "01-cuentas-y-accesos", "titulo": "Cuentas y accesos", "descripcion": "Las cuentas que el proyecto necesita (GitHub con verificación en dos pasos, proveedor de nube, pasarela de pagos, correo transaccional, consolas de inicio de sesión) abiertas o confirmadas, y su registro sin secretos: quién la abrió, cuándo, con qué correo, dónde vive el secreto.", "entra": "Ya"},
+        {"carpeta": "01-cuentas-y-accesos", "titulo": "Cuentas y accesos", "descripcion": "Las cuentas que el proyecto necesita (GitHub con verificación en dos pasos, proveedor de nube, pasarela de pagos, correo transaccional, consolas de inicio de sesión) abiertas o confirmadas, y su registro sin secretos: quién la abrió, cuándo, con qué correo, dónde vive el secreto.", "entra": "Ya", "objetivo": "Tener abiertas las cuentas que el proyecto necesita, sin que ninguna contraseña quede escrita en la carpeta.", "terminada": "Existe «cuentas.md» con cada cuenta, para qué sirve y en qué gestor de secretos está la llave, sin ningún valor; la verificación en dos pasos está activa.", "vision": "§12 seguridad y los proveedores elegidos en la fase técnica", "lee": ["`00. Planeacion/01-entrevista/entrevista.md`","`00. Planeacion/03-arquitectura/opciones-tecnicas.md`"], "skills": [{"nombre":"gh-cli","url":"https://github.com/trailofbits/skills/tree/main/plugins/gh-cli/skills/gh-cli"}], "como": ["Plan corto: qué cuentas, en qué orden y quién las abre","La persona abre cada cuenta y escribe sus contraseñas; Claude guía y anota","Verificar el acceso a cada una","/guardar"], "necesita": ["Abrir cada cuenta con su correo, escribir las contraseñas y poner la tarjeta: nada de eso lo hace Claude."]},
         {"carpeta": "02-dominio-y-marca", "titulo": "Dominio y marca", "descripcion": "Revisión de marcas registradas por escrito (registro del país y, si vende fuera, USPTO/EUIPO), dominio comprado y usuario asegurado en las redes que importan.", "entra": "Ya: el nombre está decidido"},
         {"carpeta": "03-sociedad", "titulo": "Sociedad", "descripcion": "La página entre socios (quién es dueño de qué, reparto, horas, plata, quién decide, salida, conflicto de interés), firmada por todos. Solo si hay socios; conviene antes de que exista código.", "entra": "Ya"},
-        {"carpeta": "04-entornos", "titulo": "Entornos", "descripcion": "El código dentro del mismo repositorio, con la estructura del camino técnico elegido; dos entornos (develop → pruebas, main → producción); pruebas automáticas en cada push; secretos solo en el almacén del proveedor; hooks que bloquean el «ya terminé» sin pruebas; y el «hola» publicado en pruebas.", "entra": "Cuentas (01) y dominio (02) listos"}
+        {"carpeta": "04-entornos", "titulo": "Entornos", "descripcion": "El código dentro del mismo repositorio, con la estructura del camino técnico elegido; dos entornos (develop → pruebas, main → producción); pruebas automáticas en cada push; secretos solo en el almacén del proveedor; hooks que bloquean el «ya terminé» sin pruebas; y el «hola» publicado en pruebas.", "entra": "Tras 01/01 y 01/02"}
       ],
       "skills": [
         {"nombre": "gh-cli", "url": "https://github.com/trailofbits/skills/tree/main/plugins/gh-cli/skills/gh-cli"},
@@ -249,7 +249,7 @@
       "titulo": "Landing y alta",
       "objetivo": "La página donde un cliente conoce el producto, elige plan y crea su cuenta solo.",
       "por_que": "Nadie compra lo que no entiende. La página pública explica el producto y deja que un cliente cree su cuenta solo. Aquí también van los textos legales y el registro de quién aceptó qué y cuándo: sin eso, un reclamo no se puede defender.",
-      "entra": "Cuando el alta y los planes funcionen en el entorno de pruebas. La subetapa de legal puede empezar antes: sus textos no dependen del código.",
+      "entra": "Cuando el alta y los planes de la etapa 07 funcionen en el entorno de pruebas. La subetapa de legal puede empezar antes: sus textos no dependen del código.",
       "terminada": "Alguien que no conoce el producto entra por el enlace, acepta los términos y la privacidad en casillas separadas, y termina con su cuenta configurada sin hablar con nadie; cada aceptación quedó registrada.",
       "como": ["La landing se construye con el mismo camino técnico del producto (nunca en un gestor de contenidos con plugins)."],
       "subetapas": [
@@ -257,7 +257,7 @@
         {"carpeta": "02-diseno-y-construccion", "titulo": "Diseño y construcción", "descripcion": "La página, con la marca, publicada en pruebas.", "entra": "Después del mensaje"},
         {"carpeta": "03-registro-y-pago", "titulo": "Registro y pago", "descripcion": "Conecta con el alta sin ayuda y con el cobro del plan.", "entra": "Cuando el alta funcione"},
         {"carpeta": "04-seo-y-medicion", "titulo": "SEO y medición", "descripcion": "Posicionamiento y analítica sin datos personales.", "entra": "Después de la construcción"},
-        {"carpeta": "05-legal-y-consentimiento", "titulo": "Legal y consentimiento", "descripcion": "Términos y condiciones, política de privacidad según la ley del país, cookies, reembolso y retracto, contrato de tratamiento de datos si hay clientes que suben datos de terceros; dos casillas separadas en el alta; tabla de consentimientos a la que solo se agregan filas (fecha, hora, IP, versión). Revisión de un abogado del país antes de lanzar.", "entra": "Ya"}
+        {"carpeta": "05-legal-y-consentimiento", "titulo": "Legal y consentimiento", "descripcion": "Términos y condiciones, política de privacidad según la ley del país, cookies, reembolso y retracto, contrato de tratamiento de datos si hay clientes que suben datos de terceros; dos casillas separadas en el alta; tabla de consentimientos a la que solo se agregan filas (fecha, hora, IP, versión). Revisión de un abogado del país antes de lanzar.", "entra": "Sin esperar la etapa 07: sus textos no dependen del código"}
       ],
       "skills": [
         {"nombre": "copywriting", "url": "https://github.com/coreyhaines31/marketingskills/tree/main/skills/copywriting"},
@@ -276,7 +276,7 @@
       "titulo": "Lanzamiento del MVP",
       "objetivo": "Pasar de «funciona en pruebas» a «un cliente real usa y paga el producto».",
       "por_que": "Pasar de «funciona en pruebas» a «un cliente real lo usa y paga». Pruebas de punta a punta, auditoría final, producción con monitoreo y un piloto real. Es la única forma de saber que el producto sirve de verdad.",
-      "entra": "Cuando los módulos del MVP y la landing estén en el entorno de pruebas.",
+      "entra": "Cuando las etapas 07 y 08 estén en el entorno de pruebas.",
       "terminada": "El primer cliente real usando y pagando el producto (piloto cerrado) y los ajustes del piloto hechos.",
       "como": ["Nada sale a producción sin la auditoría final limpia.", "El gate para pasar a V2 es por resultado (p. ej. N clientes pagando), nunca una fecha."],
       "subetapas": [
@@ -301,11 +301,11 @@
       "titulo": "Versión 2",
       "objetivo": "Las funciones que hacen al producto distinto de todo lo demás.",
       "por_que": "Lo que hace al producto distinto se construye después de que el MVP cobra, con el mismo ciclo. Construirlo antes es gastar meses en lo que nadie ha pagado todavía.",
-      "entra": "Cuando el piloto de la etapa 09 cierre; 09/05-ajustes puede seguir en paralelo.",
+      "entra": "Cuando el piloto (09/04) cierre. Sin esperar 09/05: los ajustes pueden seguir en paralelo.",
       "terminada": "Cada módulo de V2 en producción con su auditoría y su SOP.",
       "como": ["Una subetapa por cada módulo marcado V2 en la visión (§6); se generan al adaptar esta hoja de ruta.", "Mismo ciclo de 8 pasos por módulo. El detalle de cada uno se escribe al llegar."],
       "subetapas": [
-        {"carpeta": "01-modulo-v2-por-definir", "titulo": "<<Módulo V2 de la visión §6>>", "descripcion": "<<qué hace>>", "entra": "Al cerrar el piloto"}
+        {"carpeta": "01-modulo-v2-por-definir", "titulo": "<<Módulo V2 de la visión §6>>", "descripcion": "<<qué hace>>", "entra": "Al cerrar el piloto (09/04)"}
       ],
       "skills": [
         {"nombre": "superpowers (TDD, planes, subagentes, revisión)", "url": "https://github.com/obra/superpowers"},
@@ -320,11 +320,11 @@
       "titulo": "Versión 3 en adelante",
       "objetivo": "Expansión. Se planea en detalle cuando V2 esté en producción.",
       "por_que": "Expansión: otros países, apps de tienda, integraciones, lo que la visión dejó para después. Se planea en detalle cuando V2 esté en producción; escribirlo ahora solo fija el rumbo.",
-      "entra": "Cuando V2 esté en producción.",
+      "entra": "Cuando la etapa 10 esté en producción.",
       "terminada": "—",
       "como": ["Se planea en detalle cuando V2 esté en producción."],
       "subetapas": [
-        {"carpeta": "01-por-definir", "titulo": "<<Lo que la visión dejó para V3+>>", "descripcion": "<<una línea por idea>>", "entra": "Cuando V2 esté en producción"}
+        {"carpeta": "01-por-definir", "titulo": "<<Lo que la visión dejó para V3+>>", "descripcion": "<<una línea por idea>>", "entra": "Cuando la etapa 10 esté en producción"}
       ],
       "skills": []
     },
@@ -341,7 +341,7 @@
         {"carpeta": "01-pitch-y-precios", "titulo": "Pitch y precios", "descripcion": "La promesa en una frase, la objeción principal y los precios (de la visión §9).", "entra": "Ya"},
         {"carpeta": "02-demo-y-lista-de-espera", "titulo": "Demo y lista de espera", "descripcion": "Material para enseñar el producto antes de que exista y una lista de espera con nombre y fecha.", "entra": "Ya"},
         {"carpeta": "03-pipeline", "titulo": "Pipeline", "descripcion": "Clientes contactados, en qué paso van, sin datos sensibles.", "entra": "Ya"},
-        {"carpeta": "04-pauta", "titulo": "Pauta", "descripcion": "Publicidad pagada cuando el producto funcione y el piloto cierre.", "entra": "Al cerrar el piloto"}
+        {"carpeta": "04-pauta", "titulo": "Pauta", "descripcion": "Publicidad pagada cuando el producto funcione y el piloto cierre.", "entra": "Al cerrar el piloto (09/04)"}
       ],
       "skills": [
         {"nombre": "copywriting", "url": "https://github.com/coreyhaines31/marketingskills/tree/main/skills/copywriting"},
@@ -355,7 +355,7 @@
       "titulo": "Operación",
       "objetivo": "Soporte, métricas, finanzas y el centro de ayuda (los SOP de uso de cada módulo) cuando haya clientes en producción.",
       "por_que": "Cuando hay clientes pagando, el trabajo es acompañarlos, atender problemas, medir y cerrar cuentas. Aquí viven los SOP de uso que se escriben al cerrar cada módulo: son el centro de ayuda y la base del onboarding.",
-      "entra": "Cuando el piloto de la etapa 09 cierre; 05-sops-y-centro-de-ayuda empieza con el primer módulo cerrado de la etapa 07.",
+      "entra": "Cuando el piloto (09/04) cierre; 05-sops-y-centro-de-ayuda empieza con el primer módulo cerrado de la etapa 07.",
       "terminada": "—",
       "como": ["Se activa con el primer cliente en producción, salvo 05-sops-y-centro-de-ayuda, que recibe un SOP cada vez que se cierra un módulo."],
       "subetapas": [
@@ -363,7 +363,7 @@
         {"carpeta": "02-soporte", "titulo": "Soporte", "descripcion": "Canales, tiempos de respuesta y respuestas tipo.", "entra": "Al cerrar el piloto"},
         {"carpeta": "03-metricas", "titulo": "Métricas", "descripcion": "Clientes pagando, uso, cancelaciones. El gate del MVP se mide aquí.", "entra": "Al cerrar el piloto"},
         {"carpeta": "04-finanzas", "titulo": "Finanzas", "descripcion": "Ingresos, costos de herramientas, reparto entre socios si los hay.", "entra": "Al cerrar el piloto"},
-        {"carpeta": "05-sops-y-centro-de-ayuda", "titulo": "SOP y centro de ayuda", "descripcion": "Un SOP por pregunta («¿Cómo hago X?»), con pasos literales y pantallazos de la app con datos inventados, escrito al cerrar cada módulo. Es el centro de ayuda.", "entra": "Con el primer módulo cerrado"}
+        {"carpeta": "05-sops-y-centro-de-ayuda", "titulo": "SOP y centro de ayuda", "descripcion": "Un SOP por pregunta («¿Cómo hago X?»), con pasos literales y pantallazos de la app con datos inventados, escrito al cerrar cada módulo. Es el centro de ayuda.", "entra": "Con el primer módulo cerrado de la etapa 07, sin esperar 09/04"}
       ],
       "skills": [
         {"nombre": "sop-creator (founder-skills)", "url": "https://github.com/ognjengt/founder-skills/tree/main/skills/sop-creator"},

@@ -67,7 +67,7 @@ el CLAUDE.md no repite nada del estado (solo lo importa con `@ESTADO.md`).
   `anotar_skills.mjs` (le pone «· instalada» o «· por instalar» a cada línea de skill).
 
 ### 3. Actualizar `<raiz>/ESTADO.md` y `<raiz>/DECISIONES.md`
-- «Último guardado» (UNA línea: fecha, hora, una frase), «Dónde estamos» (máx. 3 líneas), «Siguiente paso exacto»,
+- «Último guardado» (UNA línea: fecha y una frase), «Dónde estamos» (máx. 3 líneas), «Siguiente paso exacto»,
   «Etapas activas ahora», «A medias», pendientes por persona (borre los cumplidos y anótelos en la bitácora), «Preguntas
   abiertas», «Bloqueos y avisos», tablero de etapas (una línea por etapa con estado y enlace), «Decisiones recientes»
   (máx. 10).
@@ -108,31 +108,41 @@ el CLAUDE.md no repite nada del estado (solo lo importa con `@ESTADO.md`).
 
 ### 8. Subir a GitHub (siempre, salvo «guardar sin subir»)
 **Modo «sin subir»**: si la persona dice «guardar sin subir», si no hay remoto todavía y no hay OK para crearlo, o si
-no hay red, se hacen los pasos 1 (solo el `git init`), 2, 3, 4 y 5 (queda el commit local) y se salta el resto; se
-anota en «Bloqueos y avisos» del `ESTADO.md` («commit local `abc1234` sin subir: falta <el remoto / el OK / la
-red>») y se reporta así. El siguiente `--inicio` lo va a recordar.
-1. Si el proyecto no es un repositorio todavía: `git -C "<raiz>" init -b develop`. Si Git no tiene nombre y correo
+no hay red, en este paso se hacen 8.1 (sin crear el remoto), 8.2, 8.3, 8.4 y 8.5, y luego 8.8; 8.6 y 8.7 se saltan. Se
+anota en «Bloqueos y avisos» del `ESTADO.md` («commit local sin subir: falta <el remoto / el OK / la red>») y se reporta
+así. El siguiente `--inicio` lo va a recordar.
+
+8.1. Si el proyecto no es un repositorio todavía: `git -C "<raiz>" init -b develop`. Si Git no tiene nombre y correo
    (`git config user.name` vacío) y la persona no está para darlos: `git -C "<raiz>" config user.name "<nombre del
    proyecto>"` y `user.email "<proyecto>@example.invalid"` (solo en este repositorio) y se anota en «Bloqueos y
    avisos» para que los cambie. Si no hay remoto y hay `gh` con sesión:
    `gh repo create <nombre-del-proyecto> --private --source "<raiz>" --remote origin` (con el OK de la persona la
    primera vez; después no se pregunta). Sin `gh` o sin OK: modo «sin subir».
-2. Confirme la rama: `git -C "<raiz>" branch --show-current` debe decir `develop`. Si dice `main` o nada:
+
+8.2. Confirme la rama: `git -C "<raiz>" branch --show-current` debe decir `develop`. Si dice `main` o nada:
    `git -C "<raiz>" rev-parse --verify develop` → si no existe, `git -C "<raiz>" switch -c develop`; si existe,
    `git -C "<raiz>" switch develop`. (`main` solo recibe merges desde `develop`.)
-3. `git -C "<raiz>" add -A`
-4. `node "<raiz>/.claude/skills/guardar/scripts/revisar_secretos.mjs"` → debe decir **SECRETOS: LIMPIO**.
+
+8.3. `git -C "<raiz>" add -A`
+
+8.4. `node "<raiz>/.claude/skills/guardar/scripts/revisar_secretos.mjs"` → debe decir **SECRETOS: LIMPIO**.
    Si bloquea, quite el secreto del archivo (y de la historia si ya se había subido) y vuelva a correrlo.
-5. Commit con mensaje impersonal: primera línea `NN etapa/subetapa: qué cambió` (p. ej. `01 Fundacion/01-cuentas:
+
+8.5. Commit con mensaje impersonal: primera línea `NN etapa/subetapa: qué cambió` (p. ej. `01 Fundacion/01-cuentas:
    cuentas de GitHub y hosting abiertas`); cuerpo opcional con 2-5 líneas de qué y por qué. **Sin `Co-Authored-By`,
    sin mencionar a Claude ni a nadie.** Para mensajes de varias líneas use `git -C "<raiz>" commit -F <archivo-temporal>`.
-6. `git -C "<raiz>" push -u origin develop` (el `-u` deja la rama enlazada con GitHub; no estorba repetirlo). Si falla
+
+8.6. `git -C "<raiz>" push -u origin develop` (el `-u` deja la rama enlazada con GitHub; no estorba repetirlo). Si falla
    por red o por falta de remoto, anótelo en «Bloqueos y avisos» y repórtelo: el próximo `--inicio` lo va a avisar.
-7. **Si en esta sesión algo pasó a producción**: la entrada de `CHANGELOG.md` se escribe y se commitea en `develop` →
+
+8.7. **Si en esta sesión algo pasó a producción**: la entrada de `CHANGELOG.md` se escribe y se commitea en `develop` →
    `git -C "<raiz>" switch main` (o `switch -c main` la primera vez) → `git -C "<raiz>" merge --no-ff develop` →
    `git -C "<raiz>" tag -a vX.Y.Z -m "vX.Y.Z"` → `git -C "<raiz>" push origin main --tags` → `git -C "<raiz>" switch develop`.
    Nunca sin la auditoría final limpia.
-8. Corra el detector con `--inicio`: debe decir «OK: nada cambió…» y «GitHub: rama develop al día con origin».
+
+8.8. Corra el detector con `--inicio`: debe decir «OK: nada cambió…». Con remoto, además, «GitHub: rama develop al día
+con origin». En modo «sin subir» sin remoto, el aviso esperado es «el repositorio es solo local», sin archivos sin
+commit.
 
 ### 9. Reportar
 A la persona, en máx. 6 líneas: qué archivos se tocaron, el siguiente paso (etapa/subetapa), los pendientes de cada
@@ -176,7 +186,7 @@ El `CLAUDE.md` del proyecto lo manda; se repite aquí para que la skill quede co
 ```markdown
 # ESTADO — {{PROYECTO}}
 
-**Último guardado:** <DD-mmm-AAAA HH:MM> — <una frase>.
+**Último guardado:** <DD-mmm-AAAA> — <una frase>.
 
 > Claude: esto se carga solo al abrir el chat (vía `@ESTADO.md` del CLAUDE.md). Úselo para arrancar sin pedir contexto.
 > Se actualiza con /guardar. El detalle de cada etapa está en su propio `ESTADO.md`.

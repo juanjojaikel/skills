@@ -81,16 +81,20 @@ node "<ruta-de-esta-skill>/scripts/crear_estructura.mjs" --raiz "<carpeta>" --pr
 - Crea las carpetas de cada etapa y subetapa, `99. Archivo\`, y las fichas: `ESTADO.md` y `LEEME.md` por etapa
   (con la tabla de subetapas, el porqué, el cómo, las skills y «terminada cuando» desde el JSON) y `LEEME.md` por
   subetapa con las nueve secciones, llenas con los campos del JSON (`objetivo`, `descripcion`, `terminada`, `entra`,
-  `vision`, `lee`, `skills`, `como`, `necesita`); lo que falte en el JSON queda como marca `<<…>>`.
+  `vision`, `lee`, `skills`, `como`, `necesita`); lo que falte en el JSON queda como marca `<<…>>`. La etapa 00 se
+  llena sola como referencia, con lo que ya haya en cada carpeta y una línea de qué es cada archivo.
 - Si no existe todavía `00. Planeacion/07-vision-producto/vision-producto.html`, lo crea desde la plantilla (con el
   nombre, el borrador 1 y la fecha puestos) para que la visión se escriba ahí.
 - Escribe los archivos de la raíz desde `assets/plantillas/` reemplazando `{{PROYECTO}}`, `{{DESCRIPCION}}`,
   `{{FECHA}}`, `{{PERSONAS}}`, `{{TABLERO}}`, `{{MAPA}}` y dejando `<<…>>` donde hace falta criterio.
 - Copia `assets/guardar/` a `.claude/skills/guardar/`.
 - **No pisa nada que exista**: si un archivo ya está, lo deja y lo reporta.
+- Agrega al catálogo las skills de etapa y de subetapa que la hoja cita y le faltan, con `comprobada: false`.
 - Al final imprime qué creó y la lista de marcas `<<…>>` que quedan por llenar.
 
-Después de correrlo, Claude llena las marcas que queden y corre los tres verificadores hasta que salgan limpios. Si
+Después de correrlo, Claude llena las marcas que queden y corre los verificadores hasta que salgan limpios.
+`verificar_fichas.mjs` también revisa las marcas de `CLAUDE.md`, `ESTADO.md`, `DECISIONES.md`, `README.md`, la visión y
+la hoja de ruta, aunque ocupen varias líneas. Una marca que se quiera dejar como documentación va entre acentos graves. Si
 quedan muchas marcas en las fichas, lo barato es completar los campos en `hoja-de-ruta.json`, borrar las fichas que
 se quieran regenerar y volver a correr el script (no pisa lo que existe), no editar 60 archivos uno por uno.
 

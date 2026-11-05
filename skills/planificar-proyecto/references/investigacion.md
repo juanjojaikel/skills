@@ -23,6 +23,10 @@ usuario manda): avisa de límites de mercado, legales y técnicos antes de que c
   retoma desde la última sección en vez de repetir todo.
 - **Nada de datos de personas**: ninguna cita con nombre completo de una persona particular; los foros se citan por
   el hilo, no por la persona.
+- **Enlaces que duran**: un enlace firmado o temporal (con `token=`, `signature=`, `expires=` o similar) deja de abrir
+  en días, y la cifra queda sin fuente. Se cita la página estable que lo enlaza, con el título del documento y la fecha.
+  Si el documento solo existe así, se escribe «enlace temporal», con título, emisor y fecha, para poder volver a
+  buscarlo.
 - Cada agente recibe el perfil del usuario (nivel, país, presupuesto) y la idea tal como se contó; nunca recibe la
   conclusión que Claude espera.
 
@@ -57,7 +61,8 @@ lente, nombrado por la primera). Reparto recomendado:
 | 1 | todo en un reporte por secciones, con el tope de búsquedas repartido |
 
 La lente 8 (herramientas) no necesita agente: el catálogo nace de las skills de `assets/hoja-de-ruta-base.json` y de
-las que la lente técnica recomiende, y cada URL se comprueba con `verificar_urls_github.mjs` al crear la estructura.
+las que la lente técnica recomiende, y cada URL se comprueba con `verificar_urls_github.mjs --raiz "<carpeta del
+proyecto>" --agregar <url>`, desde `assets/guardar/scripts/` de esta skill, que ya funciona sin la estructura.
 La lente 10 (nombre) tampoco: tres o cuatro candidatos se comprueban a mano con `nslookup <dominio>` (si responde,
 está tomado) y con el buscador de marcas del país. **Si no hay nombre, la lente 10 va primero**, antes que las demás,
 porque la carpeta del proyecto se crea con ese nombre desde la fase 1 (puede ser un nombre de trabajo; si después
@@ -73,9 +78,10 @@ presupuesto/mes>.
 
 Su lente: <nombre y pregunta de la lente>.
 
-Reglas: cada cifra con URL y fecha de lectura; fuente primaria antes que secundaria; si no encuentra algo, dígalo en
-«Vacíos»; sin suavizar; máximo <N> búsquedas; no copie textos largos de las fuentes (una cita de ≤15 palabras por fuente,
-entre comillas y con atribución); ninguna cita con nombre de una persona particular.
+Reglas: cada cifra con URL estable y fecha de lectura (nunca un enlace firmado o temporal: cite la página que lo enlaza);
+fuente primaria antes que secundaria; si no encuentra algo, dígalo en «Vacíos»; sin suavizar; máximo <N> búsquedas; no
+copie textos largos de las fuentes (una cita de ≤15 palabras por fuente, entre comillas y con atribución); ninguna cita
+con nombre de una persona particular.
 
 Escriba el reporte en <ruta del archivo>, en <idioma>, con esta estructura exacta. Cree el archivo con el encabezado y el
 «Resumen para decidir» en cuanto tenga los primeros hallazgos y agregue las secciones conforme avance (si la corrida
@@ -113,7 +119,8 @@ Termine devolviendo solo: la ruta del archivo, las 2 afirmaciones de más peso y
    del nicho (salud, menores, educación, finanzas, alimentos), términos y privacidad obligatorios. Todo con el texto
    oficial como fuente. Marcar «esto lo revisa un abogado del país antes de lanzar».
 6. **Pagos y cobros.** Qué medios usa la gente en el país (tarjeta, transferencia inmediata, billeteras, efectivo), qué
-   pasarelas operan ahí y qué cobran, si Stripe abre cuentas en ese país, qué exige el banco, qué pasa con impuestos. Si
+   pasarelas operan ahí y qué cobran, si Stripe abre cuentas en ese país, qué exige el banco, qué pasa con impuestos, y
+   qué forma fiscal pide cada una (persona física, empresa, registro de contribuyente) según lo que dijo la entrevista. Si
    el producto permite que sus clientes cobren a terceros: cómo hacerlo sin que la plataforma toque esa plata.
 7. **Opciones técnicas.** Dos o tres caminos para construir ESTE producto con ESTE perfil: (a) el más simple que llega a
    producción (una web app instalable, un proveedor de nube, una base de datos), (b) uno intermedio, (c) uno si el
@@ -123,9 +130,12 @@ Termine devolviendo solo: la ruta del archivo, las 2 afirmaciones de más peso y
 8. **Herramientas y skills.** Skills, plugins y repositorios de Claude Code útiles para cada etapa de este proyecto
    (planeación, diseño, backend, seguridad, frontend, pruebas, despliegue, marketing). Preferir marcas reconocidas
    (Anthropic, Cloudflare, Stripe, Trail of Bits, Microsoft, Vercel) y repositorios con actividad reciente y licencia.
-   **Cada URL se comprueba con `gh api repos/<owner>/<repo>`** (existencia, estrellas, última actualización, licencia);
-   sin `gh`, se marca «sin comprobar». Salida: `catalogo-skills-urls.json` (lista de `{nombre, url, tipo, etapas,
-   origen, comprobada}`) y el `.md` con la tabla y el total contado.
+   **Cada URL se comprueba con `verificar_urls_github.mjs --raiz "<carpeta del proyecto>" --agregar <url> ...`**, desde
+   `assets/guardar/scripts/` de esta skill: crea el catálogo si no existe, mira en GitHub que la URL exista, y llena
+   `tipo` (`repositorio` o `sub-skill`) y `comprobada` (la fecha). Sin `gh`, `comprobada` queda en `false`. Salida:
+   `catalogo-skills-urls.json` (lista de `{nombre, url, tipo, etapas, origen, comprobada}`) y el `.md` con la tabla y el
+   total contado. El `tipo` se cambia a mano si la skill ya está instalada (los valores están en
+   `references/estructura-proyecto.md`).
 9. **Fracasos y aprendizajes.** Productos de la categoría que cerraron o pivotaron, y por qué (fuentes: post-mortems,
    notas de prensa, foros). Qué patrón se repite. Qué hizo distinto el que sobrevivió.
 10. **Nombre y dominio.** Si no hay nombre: 10 candidatos cortos, pronunciables en el idioma, sin marca registrada
@@ -161,13 +171,32 @@ Formato del archivo:
 ## Lo que quedó sin verificar
 ```
 
+## Conciliación (la hace usted, después de la verificación)
+
+Cada agente trabajó sin ver a los demás, así que el mismo dato puede salir distinto en dos reportes. Lea los «Resumen
+para decidir», los hallazgos con cifras y `_verificaciones.md`, y busque el mismo dato dicho de dos formas: precios del
+mismo competidor, cantidad de clientes potenciales, comisiones, alcance de una ley, qué exige una pasarela. Deje
+`02-investigacion\_conciliacion.md`:
+
+```markdown
+# Conciliación de reportes (<fecha>)
+| Dato | Dice un reporte | Dice otro | Queda vigente | Por qué |
+|---|---|---|---|---|
+## Sin contradicciones en
+<los temas que se cruzaron y coincidieron>
+```
+
+Gana la fuente primaria y más reciente; si no se puede decidir, el dato queda «no verificado» y va a los riesgos de la
+visión. En el reporte perdedor se agrega al lado del dato «⚠️ ver `_conciliacion.md`», sin borrarlo. Si no apareció
+ninguna, el archivo lo dice: así se sabe que se revisó.
+
 ## Cómo se presenta al usuario
 
 Nada de pegarle los reportes. Un resumen de 10-15 líneas, sin jerga, con:
 
 1. Las 3 cosas que la investigación confirmó a favor de la idea (con la cifra más fuerte de cada una).
 2. Las 3 cosas que juegan en contra o que hay que resolver (legal, pagos, técnica), con la fuente.
-3. Lo que se corrigió o se refutó en la verificación, en una línea cada una.
+3. Lo que se corrigió o se refutó en la verificación y la conciliación, en una línea cada una.
 4. El camino técnico recomendado para su perfil y cuánto cuesta por mes.
 5. Qué sigue: el Consejo.
 

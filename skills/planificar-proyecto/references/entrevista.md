@@ -50,9 +50,14 @@ si es un rol, con artículo («la Ingeniera», «el Profe», «la dueña»), nun
 ➡️ Recomendado: si hay socios, una página de sociedad firmada antes de que exista código (va en la etapa 01).
 
 **P7 - Qué existe ya.** ¿Nombre, dominio, redes, cuentas (GitHub, hosting, pasarela de pagos), diseño, código,
-clientes esperando? Liste lo que haya, aunque sea poco.
+clientes esperando? ¿Con qué figura va a cobrar: como persona con actividad registrada, con una empresa, o todavía
+ninguna (según el país: RFC en México, NIT en Colombia, cédula jurídica en Costa Rica)? Liste lo que haya, aunque sea
+poco.
+*Para qué:* la figura fiscal decide qué pasarela de pago le abre cuenta, cómo se verifica el negocio en Meta o WhatsApp
+y si puede emitir facturas. Descubrirlo tarde detiene el lanzamiento.
 ➡️ Recomendado: lo que exista se registra; nada se rehace. Si no existe nombre, la lente 10 propone opciones con dominio
-libre.
+libre. Si no sabe su figura fiscal, se investiga en las lentes 5 y 6 y queda como pendiente suyo, para confirmar con un
+contador.
 
 **P8 - Tiempo y dinero.** ¿Cuántas horas por semana puede dedicarle y cuánto puede gastar por mes en herramientas
 (Claude, hosting, dominio)? ¿Qué plan de Claude tiene?
@@ -98,6 +103,7 @@ Fecha: <DD-mmm-AAAA>
 
 ## Qué existe ya
 …
+- Figura fiscal para cobrar: <persona con actividad / empresa / ninguna todavía / no sabe>
 
 ## Lo que la entrevista dejó abierto (se resuelve con la investigación)
 - …

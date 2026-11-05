@@ -100,6 +100,7 @@ function main() {
     } else console.log("OK: nada cambió después del último guardado. ESTADO.md está al día.");
     const g = gitEstado();
     if (!g) console.log("AVISO GitHub: el proyecto todavía no es un repositorio de git. /guardar lo inicia y lo sube.");
+    else if (!git("remote")) console.log(`AVISO GitHub: el repositorio es solo local (rama ${g.rama}, ${g.sinCommit} archivo(s) sin commit, sin remoto). Falta crearlo en GitHub con el OK de la persona; /guardar lo hace y sube todo.`);
     else if (g.sinSubir === "sin upstream") console.log(`AVISO GitHub: la rama ${g.rama} no está enlazada con GitHub (nada subido). /guardar hace \`git push -u origin develop\`.`);
     else if (g.sinCommit || g.sinSubir !== "0") console.log(`AVISO GitHub: rama ${g.rama} con ${g.sinCommit} archivo(s) sin commit y ${g.sinSubir} commit(s) sin subir. /guardar los sube.`);
     else console.log(`GitHub: rama ${g.rama} al día con origin.`);

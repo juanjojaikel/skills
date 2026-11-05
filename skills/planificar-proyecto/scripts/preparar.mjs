@@ -38,22 +38,28 @@ const [gitOk, gitOut] = corre("git", ["--version"]);
 console.log(`${gitOk ? "✓" : "✗"} Git${gitOk ? ` (${gitOut})` : ": no está instalado"}`);
 if (!gitOk) faltan.push("Git (guarda el historial del proyecto) → https://git-scm.com/downloads");
 else {
-  const [nombreOk, nombre] = corre("git", ["config", "--global", "user.name"]);
-  const [correoOk, correo] = corre("git", ["config", "--global", "user.email"]);
+  // La carpeta (o la más cercana que exista): la identidad vale en cualquier alcance y el repositorio de afuera se mira desde ahí.
+  let existente = raiz;
+  while (!fs.existsSync(existente) && path.dirname(existente) !== existente) existente = path.dirname(existente);
+  const [nombreOk, nombre] = corre("git", ["-C", existente, "config", "user.name"]);
+  const [correoOk, correo] = corre("git", ["-C", existente, "config", "user.email"]);
   if (!nombreOk || !nombre || !correoOk || !correo) {
     console.log("  · Git no tiene nombre y correo configurados; hacen falta para el primer guardado:");
     console.log('    git config --global user.name "Su Nombre"   ·   git config --global user.email "su@correo.com"');
     console.log("    Si la persona no está para darlos, se fijan solo en el repositorio del proyecto (sin --global) con el nombre");
     console.log("    del proyecto y un correo de relleno, y se anota en «Bloqueos y avisos» del ESTADO.md para que los cambie.");
   }
-  // Repositorio anidado: si la carpeta (o la más cercana que exista) ya está dentro de un repositorio git, avisar.
-  let existente = raiz;
-  while (!fs.existsSync(existente) && path.dirname(existente) !== existente) existente = path.dirname(existente);
+  // Repositorio anidado: avisar solo si el de afuera vería esta carpeta; si la ignora, un git init aquí no le estorba.
   const [topOk, top] = corre("git", ["-C", existente, "rev-parse", "--show-toplevel"]);
   if (topOk && top && path.resolve(top) !== raiz) {
-    console.log(`  · AVISO: esta carpeta está dentro de otro repositorio git (${path.resolve(top)}). Un git init aquí crea un`);
-    console.log("    repositorio anidado que el de afuera ve como carpeta sin rastrear. Mejor planificar fuera de ese repositorio,");
-    console.log("    o decidirlo con la persona y anotarlo en «Bloqueos y avisos».");
+    const [ignorada] = corre("git", ["-C", top, "check-ignore", "-q", raiz.split(path.sep).join("/") + "/"]);
+    if (ignorada) {
+      console.log(`  · Esta carpeta está dentro de otro repositorio git (${path.resolve(top)}), que la ignora: un git init aquí no le estorba.`);
+    } else {
+      console.log(`  · AVISO: esta carpeta está dentro de otro repositorio git (${path.resolve(top)}). Un git init aquí crea un`);
+      console.log("    repositorio anidado que el de afuera ve como carpeta sin rastrear. Mejor planificar fuera de ese repositorio,");
+      console.log("    o decidirlo con la persona y anotarlo en «Bloqueos y avisos».");
+    }
   }
 }
 

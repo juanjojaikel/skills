@@ -17,8 +17,6 @@ Para operar el repositorio hacen falta `git`, Node 18 o más nuevo y `gh` con se
 
 ## Cómo está organizado
 
-| Carpeta | Qué es |
-|---|---|
 {{MAPA}}
 
 ## Ramas

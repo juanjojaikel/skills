@@ -65,9 +65,10 @@ en cada chat posterior.
    Si existe un `ESTADO.md` a medias (sin hoja de ruta o sin fichas), diga qué falta y retome desde esa fase.
 2. **Corra la preparación** (solo lee; no instala nada):
    ```
-   node "<ruta-de-esta-skill>/scripts/preparar.mjs"
+   node "<ruta-de-esta-skill>/scripts/preparar.mjs" --raiz "<carpeta del proyecto>"
    ```
-   Dice si están Git, GitHub CLI (`gh`) con sesión iniciada y Node, y en qué carpeta se está. Si falta algo, explíquele
+   Sin `--raiz` revisa la carpeta de trabajo. Dice si están Git, GitHub CLI (`gh`) con sesión iniciada y Node, y si la
+   carpeta ya tiene una planeación o está dentro de otro repositorio. Si falta algo, explíquele
    al usuario en lenguaje llano qué es, para qué sirve y cómo instalarlo (el script imprime el enlace oficial de cada
    uno); Git y `gh` hacen falta solo al final (fase 7), así que puede empezar la entrevista y la investigación mientras
    tanto. Nunca instale nada por su cuenta sin el OK del usuario.
@@ -113,14 +114,24 @@ sección «Vacíos» con lo que no encontró. Luego UN agente adversarial verifi
 `_verificaciones.md` con veredicto (CONFIRMADA · CORREGIDA · REFUTADA) e impacto. La lente técnica produce
 `03-arquitectura\opciones-tecnicas.md`: dos o tres caminos con costo, qué exige saber, y una recomendación para ESTE
 usuario. La lente de herramientas produce `06-herramientas-claude-code\catalogo-skills-urls.md` y `.json`, con cada
-URL comprobada con `gh api` (o marcada «sin comprobar» si no hay `gh`).
+URL comprobada con el script de la skill, que ya sirve aunque la estructura todavía no exista:
+```
+node "<ruta-de-esta-skill>/assets/guardar/scripts/verificar_urls_github.mjs" --raiz "<carpeta del proyecto>" --agregar <url> <url> ...
+```
+Sin `gh`, las URLs quedan con `comprobada: false`.
+
+**Por último, concilie.** Los agentes trabajan por separado y se contradicen: un precio distinto para el mismo
+competidor, una ley citada con otro alcance. Usted mismo, sin otro agente, cruza los reportes con las verificaciones y
+deja `02-investigacion\_conciliacion.md` con cada contradicción, cuál dato queda y por qué (la referencia trae el
+formato). El Consejo y la visión citan solo el dato conciliado: si no, un dato ya corregido se cuela en la fuente de
+verdad del producto.
 
 Si no hay `Agent` o búsqueda web, dígalo con franqueza y haga la investigación usted mismo con lo que tenga, marcando lo
 que quedó más débil.
 
 ### Fase 3 — Consejo de 5 asesores (lea `references/consejo.md`)
 
-Con los reportes y las verificaciones, escriba las cinco voces (el Contrario, el de Primeros Principios, el
+Con los reportes, las verificaciones y la conciliación, escriba las cinco voces (el Contrario, el de Primeros Principios, el
 Expansionista, el de Afuera, el Ejecutor), la revisión anónima entre pares y el veredicto del Presidente en
 `00. Planeacion\04-consejo\acta-consejo-<AAAA-MM-DD>.md`. El veredicto es consejo: se lo presenta al usuario en
 lenguaje llano con los tres o cuatro puntos que cambiarían la idea, y **él decide** qué acepta. Lo que acepte y lo que
@@ -147,9 +158,14 @@ alguien que no sabe nada, su «entra cuando», su «terminada cuando» verificab
 Escriba `00. Planeacion\07-vision-producto\hoja-de-ruta.json` **completo, subetapa por subetapa**: además de carpeta,
 título y descripción, cada subetapa lleva `objetivo`, `terminada`, `vision`, `lee`, `skills`, `como` y `necesita` (el
 esquema está en la referencia). Son los textos de las fichas: con ellos en el JSON, el script de la fase 6 escribe las
-60 fichas solas; sin ellos, toca llenar 60 archivos a mano. Si son muchas subetapas, escriba el JSON etapa por etapa
-(un agente en serie por etapa, que recibe la visión y la etapa base). Genere el HTML con
-`node assets/guardar/scripts/generar_hoja_de_ruta.mjs` y pídale al usuario que lo apruebe igual que la visión.
+60 fichas solas; sin ellos, toca llenar 60 archivos a mano. Si son muchas subetapas, escríbalo etapa por etapa y guarde
+el JSON al terminar cada una, para que un corte no borre lo hecho. **Reparta según el presupuesto:** con holgura, un
+agente en serie por etapa (recibe la visión y la etapa base); con plan Pro o cerca del límite de uso, escríbalo usted
+mismo o junte etapas en bloques, sin pasar de 10 agentes. Si aun así no alcanza, detalle primero las etapas 01, 02 y 07
+y avise cuáles quedaron cortas: nunca las deje incompletas sin decirlo. Genere el HTML con
+`node "<ruta-de-esta-skill>/assets/guardar/scripts/generar_hoja_de_ruta.mjs" --json "<ruta del JSON>"`, que además
+revisa el orden. Tiene que decir **ORDEN: POSIBLE**. Después lea los «entra cuando» de corrido buscando lo que un script
+no ve (la referencia da ejemplos) y pídale al usuario que apruebe la hoja igual que la visión.
 
 ### Fase 6 — Crear la estructura del proyecto (lea `references/estructura-proyecto.md`)
 
@@ -167,17 +183,19 @@ Con la hoja de ruta aprobada:
    `proyecto.json`, `personas[].nombre` va como se quiere leer en una frase («la Ingeniera», «el Profe», «Juanjo»),
    `graba` es `"graba"`, `"ensena"` o `"no"`, y `repo` se deja fuera hasta que exista en GitHub (el script escribe «por
    crear con el OK de …»).
-2. Llene lo que el script dejó marcado con `<<…>>`: el `CLAUDE.md` (qué es el proyecto, decisiones fijas, seguridad,
-   mapa), el `ESTADO.md` raíz (dónde estamos, siguiente paso exacto: la primera subetapa de la etapa 01),
-   `DECISIONES.md` (todas las decisiones de la planeación, numeradas, con fecha y porqué, incluidas las del Consejo
-   que se aceptaron o rechazaron) y las pocas marcas que queden en las fichas. Si quedan muchas, complete los campos
+2. Llene lo que el script dejó marcado con `<<…>>`, que con el JSON completo es lo que exige criterio: el `CLAUDE.md`
+   (qué es el proyecto, decisiones fijas, seguridad, mapa), el `ESTADO.md` raíz (dónde estamos, siguiente paso exacto:
+   la primera subetapa de la etapa 01) y `DECISIONES.md` (todas las decisiones de la planeación, numeradas, con fecha y
+   porqué, incluidas las del Consejo que se aceptaron o rechazaron). Si quedan marcas en las fichas, complete los campos
    en el JSON, borre esas fichas y vuelva a correr el script: es más barato que editar 60 archivos.
 3. Mueva los archivos de la planeación (entrevista, investigación, acta, visión, hoja de ruta, catálogo) a sus carpetas
    de `00. Planeacion\` si no estaban ya ahí, y marque esa etapa como terminada (es referencia).
-4. Verifique: `node .claude/skills/guardar/scripts/verificar_fichas.mjs` → **FICHAS: LIMPIAS**;
-   `node .claude/skills/guardar/scripts/anotar_skills.mjs` (marca cada skill como instalada o por instalar);
-   `node .claude/skills/guardar/scripts/cambios_sesion.mjs --verificar` → **VERIFICACIÓN LIMPIA**. Corrija lo que
-   avisen; no siga con avisos.
+4. Verifique en este orden, porque el primero escribe lo que el segundo exige, y corrija lo que avisen:
+   `node .claude/skills/guardar/scripts/anotar_skills.mjs` (marca cada skill como instalada o por instalar; agregue
+   `--sin-local` si quien corre esto no es quien va a usar el proyecto, para no contar las skills de esta computadora);
+   `node .claude/skills/guardar/scripts/verificar_fichas.mjs` → **FICHAS: LIMPIAS** (fichas, marcas en la raíz, la
+   visión y la hoja, y orden de las etapas);
+   `node .claude/skills/guardar/scripts/cambios_sesion.mjs --verificar` → **VERIFICACIÓN LIMPIA**.
 
 ### Fase 7 — Git y GitHub
 
@@ -219,7 +237,7 @@ sin jerga:
 ## Mapa de esta skill
 
 - `references/entrevista.md` — las preguntas de las dos rondas, con sus respuestas recomendadas y qué hacer con cada una.
-- `references/investigacion.md` — las 10 lentes, el prompt de cada agente, el formato del reporte y la verificación adversarial.
+- `references/investigacion.md` — las 10 lentes, el prompt de cada agente, el formato del reporte, la verificación adversarial y la conciliación.
 - `references/consejo.md` — los cinco asesores, la revisión anónima y el Presidente.
 - `references/vision-producto.md` — las secciones de la visión y cómo se itera con el usuario.
 - `references/hoja-de-ruta.md` — cómo adaptar la base de etapas y el esquema del JSON.

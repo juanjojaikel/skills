@@ -5,7 +5,8 @@ lo demás necesita (cuentas, entornos, base técnica, seguridad), después los m
 el lanzamiento, y al final las versiones siguientes. Cada etapa tiene un «entra cuando» (qué tiene que existir antes)
 y un «terminada cuando» (un resultado verificable, nunca una fecha). Cada subetapa es **una carpeta y un chat**.
 
-`assets/hoja-de-ruta-base.json` es la plantilla. **Se adapta a cada proyecto; nunca se copia tal cual.**
+`assets/hoja-de-ruta-base.json` es la plantilla. **Se adapta a cada proyecto; nunca se copia tal cual.** La primera
+subetapa de la etapa 01 trae llenos todos los campos de ficha, como ejemplo de lo que se espera en las demás.
 
 ## Esquema del JSON
 
@@ -62,6 +63,40 @@ y un «terminada cuando» (un resultado verificable, nunca una fecha). Cada sube
   sin marcas `<<…>>`. Sin ellos, cada ficha queda con 5-6 marcas y hay que llenar 60 archivos a mano. Por eso la hoja
   de ruta se escribe completa en la fase 5, subetapa por subetapa, antes de crear la estructura. En `lee`, lo que ya
   existe va entre acentos graves y lo que todavía no existe entre «comillas angulares» (regla 8 de escritura).
+- La etapa 00 no necesita esos campos: el script la llena como referencia. Si una subetapa de la 00 los trae, se usan.
+  Si a una subetapa le falta `entra`, hereda el de su etapa.
+
+## Cuando el presupuesto no alcanza para detallar todo
+
+Escribir el JSON es lo más largo de la fase. Se guarda al terminar cada etapa, para retomar desde ahí si hay un corte.
+
+| Presupuesto | Cómo se escribe |
+|---|---|
+| Holgado (plan Max o API) | Un agente en serie por etapa; recibe la visión, la etapa base y el JSON hasta ahí |
+| Justo (plan Pro) | Lo escribe Claude en el chat principal, o en bloques: 01-03 · 04-06 · 07-09 · 10-14, un agente por bloque |
+| Cerca del límite de uso | Primero 01, 02 y 07, que son lo más propio del proyecto. Las demás quedan con sus campos base |
+
+Nunca más de 10 agentes. Lo que quede corto se le dice al usuario y sus marcas se ven al crear la estructura: la
+verificación final no pasa hasta completarlas.
+
+## Revisar el orden antes de aprobar
+
+`generar_hoja_de_ruta.mjs` lee cada `entra` y entiende `07/01`, `etapa 07`, `etapas 04 a 06`, `07. Nombre` y
+`04-entornos`. Da problema si se cita algo que no existe (una etapa que se quitó) o si hay un círculo (A espera a B y B
+espera a A), y avisa cuando una subetapa espera a otra de número mayor, que puede ser a propósito. Solo sigue lo que
+lleva número: «cuando los módulos estén» no le dice nada, «cuando la etapa 07 esté» sí. Entre subetapas de la misma
+etapa basta «después de las pantallas»; lo que cruza de etapa va con número. Una subetapa hereda el `entra` de su etapa;
+si no debe esperarlo, se escribe «sin esperar la etapa 07» en su propio `entra`.
+
+Un script no ve el sentido de las cosas. Lea los `entra` de corrido y pregúntese, para cada uno, qué se rompe si esto va
+antes o después:
+
+- **Medir antes de cambiar:** la línea base de un dato (ausencias, ventas, tiempo perdido) se toma antes de encender lo
+  que debería mejorarlo. Si no, nunca se podrá probar que mejoró.
+- **Probar antes de construir encima:** lo que una prueba de concepto puede tumbar no se diseña antes de su veredicto.
+- **Permiso antes de datos:** el consentimiento y lo legal van antes del primer dato real, no antes del lanzamiento.
+- **Cuenta antes de lo que la usa:** la subetapa que usa una cuenta, un dominio o un número espera a quien lo abre, y
+  algunas aprobaciones de terceros tardan semanas.
 
 ## Las etapas base y cómo se adaptan
 

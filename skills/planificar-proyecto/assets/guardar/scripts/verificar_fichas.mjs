@@ -9,9 +9,11 @@
 // tenga sus secciones; que toda URL de github.com esté en hoja-de-ruta.json o en el catálogo (otras URLs: aviso); que
 // las rutas entre acentos graves existan; que no queden marcas <<…>> por llenar; que no haya atribuciones narrativas
 // («Claude hizo», «<persona> dijo»), caracteres de control, skills sin estado ni «Co-Authored».
+// Además, sin --etapa: marcas <<…>> y {{…}} en los archivos de la raíz, en la visión y en la hoja de ruta, y que el orden
+// de los «entra cuando» sea posible (nada cita lo que no existe, nadie se espera en círculo).
 import fs from "node:fs";
 import path from "node:path";
-import { RAIZ, RUTA_HOJA, RUTA_CATALOGO_JSON, hojaDeRuta, leerJson, leerTexto, personas, rutasRotasEn, relativa, existe, args, salida } from "./_comun.mjs";
+import { RAIZ, RUTA_HOJA, RUTA_CATALOGO_JSON, hojaDeRuta, leerJson, leerTexto, personas, rutasRotasEn, relativa, existe, args, salida, marcasEn, revisarOrden } from "./_comun.mjs";
 
 salida();
 
@@ -30,8 +32,10 @@ const SECCIONES = [
 const SKILL_LINEA = /^\s*[-*]\s+[^\n]+?\s[—–-]\s+https?:\/\/\S+/;
 const SKILL_ESTADO = /·\s*(instalada|por instalar|integrada|sin URL|installed|to install|built-in)/i;
 const URL = /https?:\/\/[^\s<>()"'`\]]+/g;
-const MARCA = /<<[^>]{1,120}>>/;
 const COAUTH = /co-authored/i;
+// Lo que tiene que quedar sin marcas además de las fichas. `true` = el archivo tiene que existir.
+const OTROS_ARCHIVOS = [["CLAUDE.md", true], ["ESTADO.md", true], ["DECISIONES.md", true], ["README.md", false], ["CHANGELOG.md", false],
+  ["99. Archivo/LEEME.md", false], ["00. Planeacion/07-vision-producto/vision-producto.html", true], ["00. Planeacion/07-vision-producto/hoja-de-ruta.json", true]];
 
 function atribuciones() {
   const nombres = personas().map((n) => n.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"));
@@ -47,7 +51,11 @@ function atribuciones() {
 
 function urlsPermitidas(hr) {
   const out = new Set();
-  for (const e of hr.etapas) for (const s of e.skills || []) if (s.url) out.add(s.url.replace(/\/+$/, "").toLowerCase());
+  for (const e of hr.etapas) {
+    for (const s of [...(e.skills || []), ...(e.subetapas || []).flatMap((x) => (Array.isArray(x.skills) ? x.skills : []))]) {
+      if (s.url) out.add(s.url.replace(/\/+$/, "").toLowerCase());
+    }
+  }
   const cat = leerJson(RUTA_CATALOGO_JSON, []);
   for (const ent of cat || []) {
     const u = ent && typeof ent === "object" ? ent.url : null;
@@ -77,9 +85,9 @@ function revisarArchivo(p, permitidas, esSubetapa, rxAtrib) {
     if (rxAtrib.test(l)) problemas.push(`línea ${i}: atribución narrativa: «${corto}»`);
     if ([...l].some((c) => c.charCodeAt(0) < 32 && c !== "\t")) problemas.push(`línea ${i}: caracteres de control en el texto (una ruta con barra mal escapada): «${corto}»`);
     if (SKILL_LINEA.test(l) && !SKILL_ESTADO.test(l)) problemas.push(`línea ${i}: skill sin estado «· instalada» o «· por instalar» (corra anotar_skills.mjs): «${corto}»`);
-    if (MARCA.test(l)) problemas.push(`línea ${i}: marca por llenar: «${corto}»`);
     if (COAUTH.test(l)) problemas.push(`línea ${i}: Co-Authored`);
   });
+  for (const m of marcasEn(texto)) problemas.push(`línea ${m.linea}: marca por llenar: «${m.texto}»`);
   return [problemas, avisos];
 }
 
@@ -91,6 +99,22 @@ function main() {
   const rxAtrib = atribuciones();
   const informe = {};
   let total = 0;
+  if (!a.etapa) {
+    const probs = [];
+    for (const [rel, obligatorio] of OTROS_ARCHIVOS) {
+      const texto = leerTexto(path.join(RAIZ, rel));
+      if (texto === null) { if (obligatorio) probs.push(`${rel}: no existe`); continue; }
+      for (const m of marcasEn(texto)) probs.push(`${rel}: línea ${m.linea}: marca por llenar: «${m.texto}»`);
+      for (const m of new Set(texto.match(/\{\{[A-Z_]+\}\}/g) || [])) probs.push(`${rel}: plantilla sin reemplazar: ${m}`);
+    }
+    const orden = revisarOrden(hr);
+    probs.push(...orden.problemas.map((p) => `hoja-de-ruta.json: ${p}`));
+    total += probs.length;
+    informe["(raíz)"] = { problemas: { raiz: probs }, avisos: { orden: orden.avisos }, n: probs.length };
+    console.log(`\n## Raíz, visión y orden de la hoja de ruta: ${probs.length} problema(s), ${orden.avisos.length} aviso(s)`);
+    for (const x of probs) console.log(`  ✗ ${x}`);
+    for (const x of orden.avisos) console.log(`  · ${x}`);
+  }
   for (const e of hr.etapas) {
     if (a.etapa && e.carpeta !== a.etapa) continue;
     const ed = path.join(RAIZ, e.carpeta);
