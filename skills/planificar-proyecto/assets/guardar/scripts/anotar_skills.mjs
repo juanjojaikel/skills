@@ -5,8 +5,13 @@
 //   ... --comprobar                                                              solo lista las líneas sin estado
 //
 // Una línea de skill es «- nombre — https://…». Se le agrega « · instalada» o « · por instalar». «Instalada» = el
-// catálogo la marca instalada, plugin, integrada o mcp; para la raíz de un repositorio, basta con que alguna de sus
-// skills esté instalada. Si además existe la carpeta en ~/.claude/skills/<nombre>, también cuenta como instalada.
+// catálogo la marca con tipo «instalada», «integrada» o «mcp» (o instalada: true); para la raíz de un repositorio, basta
+// con que alguna de sus skills esté instalada. Si además existe la carpeta en ~/.claude/skills/<nombre> de ESTA
+// computadora, también cuenta (con --sin-local se ignora esa comprobación: útil si quien corre el script no es la
+// persona que va a usar el proyecto).
+//
+// Valores de «tipo» en el catálogo: instalada · por-instalar · plugin (se instala como plugin: cuenta como por
+// instalar) · sub-skill (una skill dentro de un repositorio) · repositorio · integrada (viene con Claude Code) · mcp.
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
@@ -15,7 +20,7 @@ import { RAIZ, RUTA_CATALOGO_JSON, caminar, carpetaCodigo, leerJson, relativa, a
 salida();
 const LINEA = /^(\s*[-*]\s+)(.+?)(\s[—–-]\s+)(https?:\/\/\S+)(.*)$/;
 const YA = /·\s*(instalada|por instalar|integrada|sin URL|installed|to install|built-in)/i;
-const INSTALADAS = ["instalada", "plugin", "integrada", "mcp", "installed"];
+const INSTALADAS = ["instalada", "integrada", "mcp", "installed"];
 const POR_INSTALAR = " · por instalar (revisar el código, instalar y anotar en el catálogo)";
 
 function estados() {
@@ -62,7 +67,7 @@ function main() {
         const repo = u.includes("github.com") ? u.split("/").slice(0, 5).join("/") : u;
         let inst = porUrl.get(u);
         if (inst === undefined && u.split("/").length === 5) inst = porRepo.get(repo);
-        if (!inst && instaladaLocal(m[2])) inst = true;
+        if (!inst && !a["sin-local"] && instaladaLocal(m[2])) inst = true;
         let estado;
         if (u.includes("code.claude.com")) estado = " · integrada en Claude Code";
         else if (inst) estado = " · instalada";
@@ -78,7 +83,7 @@ function main() {
     }
   }
   if (a.comprobar) console.log(pendientes.length ? pendientes.join("\n") : "Todas las skills de las fichas tienen estado.");
-  else console.log(`Fichas anotadas: ${cambiados}`);
+  else console.log(`Fichas anotadas: ${cambiados}` + (a["sin-local"] ? "" : ` («instalada» se decidió con el catálogo y con ~/.claude/skills de esta computadora, ${os.hostname()}; si el proyecto lo va a usar otra persona, corra con --sin-local)`));
 }
 
 main();

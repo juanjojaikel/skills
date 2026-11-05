@@ -8,9 +8,15 @@
 // DECISIONES.md, CHANGELOG.md, README.md, .gitignore, .gitattributes), proyecto.json en la raíz, el catálogo inicial de
 // skills (desde las skills de la hoja de ruta) y la skill /guardar en .claude/skills/guardar/. Al final lista lo creado
 // y las marcas <<…>> que quedan por llenar.
+//
+// Las fichas se llenan desde hoja-de-ruta.json: cada subetapa puede traer, además de carpeta/titulo/descripcion/entra,
+// los campos objetivo, terminada, vision (secciones de la visión que usa), lee (lista de archivos que Claude lee),
+// skills (lista {nombre, url}; si falta, hereda las de la etapa), como (lista de pasos) y necesita (lista). Cada etapa
+// puede traer vision (secciones). Lo que falte queda como marca <<…>> para que Claude lo complete.
 import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
+import { execFileSync } from "node:child_process";
 
 if (process.stdout.setEncoding) process.stdout.setEncoding("utf8");
 
@@ -73,7 +79,11 @@ function copiarCarpeta(desde, hasta) {
 
 // ---- valores comunes ----
 const personas = (proy.personas || []).map((p) => (typeof p === "string" ? { nombre: p, rol: "" } : p));
-const usuario = personas[0] ? personas[0].nombre : "la persona dueña del proyecto";
+// «La dueña» → «la dueña» cuando el nombre empieza con artículo (va en medio de una frase); los nombres propios no cambian.
+const enFrase = (n) => n.replace(/^(La|El|Los|Las|O|A|Os|As|The)\s/, (m) => m.toLowerCase());
+const nombres = personas.map((p) => enFrase(p.nombre));
+const usuario = nombres.length === 0 ? "la persona dueña del proyecto" : nombres.length === 1 ? nombres[0] : nombres.slice(0, -1).join(", ") + " y " + nombres[nombres.length - 1];
+const valida = nombres.length > 1 ? "validan" : "valida";
 const personasTabla = personas.length
   ? personas.map((p) => `| ${p.nombre} | ${p.rol || "<<rol>>"} | ${p.hace || "<<qué hace>>"} | ${p.valida || "<<qué valida>>"} |`).join("\n")
   : "| <<nombre>> | <<rol>> | <<qué hace>> | <<qué valida>> |";
@@ -90,7 +100,7 @@ const tablero = hoja.etapas.map((e) => {
 const mapa = hoja.etapas.map((e) => `- \`${e.carpeta}\` — ${e.objetivo || e.titulo}`).join("\n") + "\n- `99. Archivo` — lo superado, con un LEEME que dice por qué.";
 const lista = (arr, vacio) => (arr && arr.length ? arr.map((x, i) => `${i + 1}. ${x}`).join("\n") : vacio);
 const pendientesPersonas = personas.length
-  ? personas.map((p) => `**De ${p.nombre}:**\n- [ ] <<pendiente>>`).join("\n")
+  ? personas.map((p) => `**De ${enFrase(p.nombre)}:**\n- [ ] <<pendiente>>`).join("\n")
   : "**De la persona dueña del proyecto:**\n- [ ] <<pendiente>>";
 
 const valores = {
@@ -100,6 +110,7 @@ const valores = {
   PERSONAS_TABLA: personasTabla,
   PERSONAS_LISTA: personasLista,
   USUARIO: usuario,
+  VALIDA: valida,
   PENDIENTES_PERSONAS: pendientesPersonas,
   TABLERO: tablero,
   MAPA: mapa,
@@ -111,9 +122,14 @@ const valores = {
   GUION: lista(hoja.guion_de_arranque, "<<guion de arranque>>"),
   CARPETA_CODIGO: codigo || "(sin código)",
   LINEA_CODIGO: codigo ? `- **Código:** vive en \`${codigo}\` dentro del mismo repositorio; su propio \`CLAUDE.md\` manda adentro.` : "- Este proyecto no lleva código: aplica solo el ciclo sin código.",
-  REPO: proy.repo || "<<owner/repo (privado)>>",
+  REPO: proy.repo ? "`" + proy.repo + "`" : `por crear en GitHub con el OK de ${usuario} (hasta entonces el repositorio es solo local y se anota en «Bloqueos y avisos» del ESTADO.md)`,
   IDIOMA: proy.idioma || "español",
-  GRABA: proy.graba ? "Sí: el guion de arranque se escribe para leerse en cámara, para alguien que no sabe nada de IA ni de apps." : "No: el guion de arranque igual de claro, pero más corto.",
+  GRABA: (() => {
+    const g = String(proy.graba === true ? "graba" : proy.graba || "no").toLowerCase();
+    if (/graba|c[aá]mara|record/.test(g)) return "Se graba: el guion de arranque se escribe para leerse en cámara, para alguien que no sabe nada de IA ni de apps.";
+    if (/ense|teach|socio|partner/.test(g)) return "Se enseña a otra persona: el guion de arranque se escribe para que alguien que no sabe nada de IA ni de apps lo lea y lo siga.";
+    return "No: el guion de arranque igual de claro, pero más corto.";
+  })(),
   VERSION_HOJA: hoja.version || FECHA,
 };
 
@@ -158,7 +174,7 @@ ${tablaSub}
 - Nada a medias.
 
 ## ▶️ Siguiente paso
-${esPlaneacion ? "Ninguno: la etapa es referencia y se consulta. El siguiente paso del proyecto está en el `ESTADO.md` raíz." : e === primera && primeraSub ? `**${primeraSub.carpeta}.** Se lee \`${e.carpeta}/${primeraSub.carpeta}/LEEME.md\`. Nombre del chat: \`${nombreChat}\`.` : `Entra cuando: ${e.entra || "<<…>>"}.`}
+${esPlaneacion ? "Ninguno: la etapa es referencia y se consulta. El siguiente paso del proyecto está en el `ESTADO.md` raíz." : e === primera && primeraSub ? `**${primeraSub.carpeta}.** Se lee \`${e.carpeta}/${primeraSub.carpeta}/LEEME.md\`. Nombre del chat: \`${nombreChat}\`.` : `Entra cuando: ${(e.entra || "<<…>>").replace(/\.\s*$/, "")}.`}
 
 ## Pendientes (con dueño)
 - Ninguno todavía.
@@ -195,7 +211,7 @@ Cada subetapa lista en su ficha el subconjunto que usa, más las del catálogo q
 ## Qué lee Claude para arrancar la etapa
 - \`ESTADO.md\` (raíz; se carga solo) y \`${e.carpeta}/ESTADO.md\`.
 - \`00. Planeacion/07-vision-producto/hoja-de-ruta.json\` — entrada «${e.carpeta}» y los ciclos.
-- \`00. Planeacion/07-vision-producto/vision-producto.html\` — <<las secciones que esta etapa usa>>.
+- \`00. Planeacion/07-vision-producto/vision-producto.html\` — ${e.vision || "<<las secciones que esta etapa usa>>"}.
 - El \`LEEME.md\` de la subetapa que toque.
 `);
 
@@ -204,34 +220,51 @@ Cada subetapa lista en su ficha el subconjunto que usa, más las del catálogo q
     carpeta(sd);
     const presentes = fs.readdirSync(sd).filter((n) => n !== "LEEME.md" && !n.startsWith(".")).sort();
     const archivosLineas = ["- `LEEME.md` — esta ficha.", ...presentes.map((n) => "- `" + n + "` — <<qué es, para qué sirve>>")].join("\n");
+    const lista2 = (v) => (Array.isArray(v) ? v : v ? [v] : []);
+    const skillsSub = Array.isArray(s.skills) ? s.skills : (e.skills || []);
+    const skillsLineas = skillsSub.length
+      ? skillsSub.map((k) => `- ${k.nombre} — ${k.url}`).join("\n")
+      : Array.isArray(s.skills) ? "- Ninguna específica: se usan las de la etapa (ver `" + e.carpeta + "/LEEME.md`)." : "- <<las del catálogo que sirven aquí, con URL exacta>>";
+    const leeLineas = [
+      "- `" + e.carpeta + "/ESTADO.md` y este archivo.",
+      "- `00. Planeacion/07-vision-producto/vision-producto.html` — " + (s.vision || e.vision || "<<secciones que aplican>>") + ".",
+      ...lista2(s.lee).map((x) => "- " + x),
+    ];
+    if (!lista2(s.lee).length) leeLineas.push("- <<archivos de 00. Planeacion o de etapas anteriores que esta subetapa necesita; los que todavía no existen van entre «comillas angulares», no entre acentos graves>>");
+    const comoSub = esPlaneacion
+      ? "Terminada; se consulta. Si hace falta ampliarla: 1) plan corto y OK · 2) ejecutar · 3) verificar · 4) /guardar."
+      : lista2(s.como).length ? lista2(s.como).map((x, i) => `${i + 1}. ${x}`).join("\n") : "<<los pasos del ciclo que aplican (módulo con código o sin código), con lo concreto de esta subetapa>>";
+    const necesitaSub = lista2(s.necesita).length ? lista2(s.necesita).map((x) => "- " + x).join("\n") : "- <<validación, firma, pago o credencial que solo esa persona puede dar; o «Nada pendiente»>>";
     escribir(path.join(sd, "LEEME.md"), `# ${e.carpeta} / ${s.carpeta} — ${s.titulo}
 
-**Objetivo:** <<una frase: qué queda resuelto al terminar>>
-**Qué se entrega:** ${s.descripcion}
-**Terminada cuando:** <<criterio verificable: qué archivo, pantalla o prueba existe>>
+**Objetivo:** ${s.objetivo || "<<una frase: qué queda resuelto al terminar>>"}
+**Qué se entrega:** ${s.descripcion || "<<qué se entrega>>"}
+**Terminada cuando:** ${s.terminada || "<<criterio verificable: qué archivo, pantalla o prueba existe>>"}
 **Entra cuando:** ${s.entra || "<<qué tiene que existir antes>>"}
 
 > Rutas relativas a la raíz del proyecto.
 
 ## Qué lee Claude para arrancar
-- \`${e.carpeta}/ESTADO.md\` y este archivo.
-- \`00. Planeacion/07-vision-producto/vision-producto.html\` — <<secciones que aplican>>.
-- <<archivos de 00. Planeacion o de etapas anteriores que esta subetapa necesita>>
+${leeLineas.join("\n")}
 
 ## Skills (con enlace)
-${(e.skills || []).length ? e.skills.map((k) => `- ${k.nombre} — ${k.url}`).join("\n") : "- <<las del catálogo que sirven aquí, con URL exacta>>"}
+${skillsLineas}
 
 ## Cómo se trabaja
-${esPlaneacion ? "Terminada; se consulta. Si hace falta ampliarla: 1) plan corto y OK · 2) ejecutar · 3) verificar · 4) /guardar." : "<<los pasos del ciclo que aplican (módulo con código o sin código), con lo concreto de esta subetapa>>"}
+${comoSub}
 
 ## Qué necesita del responsable
-- <<validación, firma, pago o credencial que solo esa persona puede dar; o «Nada pendiente»>>
+${necesitaSub}
 
 ## Archivos de esta carpeta
 ${archivosLineas}
 `);
   }
 }
+
+// ---- visión: si todavía no existe, el esqueleto desde la plantilla con sus marcas ----
+const rutaVision = path.join(raiz, "00. Planeacion", "07-vision-producto", "vision-producto.html");
+if (!fs.existsSync(rutaVision)) escribir(rutaVision, plantilla("vision-producto.html", { ...valores, BORRADOR: "1" }));
 
 // ---- catálogo inicial de skills (desde la hoja de ruta) ----
 const dirCat = path.join(raiz, "00. Planeacion", "06-herramientas-claude-code");
@@ -268,6 +301,15 @@ for (const [k, v] of Object.entries(valores)) skillLleno = skillLleno.split(`{{$
 escribir(path.join(destinoGuardar, "SKILL.md"), skillLleno);
 copiarCarpeta(path.join(GUARDAR, "scripts"), path.join(destinoGuardar, "scripts"));
 
+// ---- hoja-de-ruta.html: si no existe, se genera desde el JSON (CLAUDE.md y README.md lo citan) ----
+const rutaHtml = path.join(path.dirname(rutaHoja), "hoja-de-ruta.html");
+if (!fs.existsSync(rutaHtml)) {
+  try {
+    execFileSync(process.execPath, [path.join(destinoGuardar, "scripts", "generar_hoja_de_ruta.mjs"), "--json", rutaHoja, "--html", rutaHtml], { cwd: raiz, stdio: ["ignore", "pipe", "pipe"] });
+    if (fs.existsSync(rutaHtml)) creados.push(rel(rutaHtml));
+  } catch (e) { console.log("No se pudo generar hoja-de-ruta.html: " + String(e.stderr || e.message).trim().slice(0, 200)); }
+}
+
 // ---- ESTADO.md raíz con la fecha más nueva (cambios_sesion.mjs mide desde ahí) ----
 try { const ahora = new Date(); fs.utimesSync(path.join(raiz, "ESTADO.md"), ahora, ahora); } catch { }
 
@@ -282,7 +324,8 @@ if (saltados.length) {
 const totalMarcas = [...marcas.values()].reduce((a, b) => a + b, 0);
 console.log(`\nMarcas <<…>> por llenar: ${totalMarcas} en ${marcas.size} archivo(s)` + (marcas.size ? ":" : "."));
 for (const [f, n] of [...marcas].sort((a, b) => b[1] - a[1])) console.log(`  ${n}\t${f}`);
-console.log(`\nSiguiente: llenar las marcas (CLAUDE.md, ESTADO.md, DECISIONES.md y las fichas), luego
+if (totalMarcas) console.log("\nPara que queden menos marcas: complete en hoja-de-ruta.json los campos por subetapa (objetivo, terminada, vision, lee, skills, como, necesita) y por etapa (vision), borre las fichas que quiera regenerar y vuelva a correr este script (no pisa lo que existe).");
+console.log(`\nSiguiente: llenar las marcas que queden (CLAUDE.md, ESTADO.md, DECISIONES.md y las fichas), luego
   node ".claude/skills/guardar/scripts/verificar_fichas.mjs"     → FICHAS: LIMPIAS
   node ".claude/skills/guardar/scripts/anotar_skills.mjs"
   node ".claude/skills/guardar/scripts/cambios_sesion.mjs" --verificar → VERIFICACIÓN LIMPIA`);

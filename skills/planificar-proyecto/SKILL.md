@@ -53,7 +53,8 @@ en cada chat posterior.
 7. **Secretos y datos de personas reales: nunca** en la carpeta, en el chat ni en el repositorio. En los registros se
    escribe «ver gestor de secretos», no el valor. Datos de clientes reales: solo datos inventados (sintéticos).
 8. **Presupuesto.** Una ventana pesada de Claude a la vez; agentes en serie salvo que el usuario diga lo contrario; máximo
-   10 agentes por investigación. Si una corrida se corta, se reanuda, no se repite.
+   10 agentes por investigación; si caben menos agentes que lentes, se fusionan (la referencia dice cómo). Cada agente
+   escribe su archivo por partes, para que si una corrida se corta se reanude desde lo escrito, no se repita.
 9. **Sin fechas ni atrasos.** El plan no tiene calendario: cada etapa termina cuando su resultado existe y se verificó,
    no en una fecha. Las únicas fechas escritas son las de lo que ya pasó.
 
@@ -77,9 +78,11 @@ en cada chat posterior.
 
 ## Las 8 fases, en orden
 
-Cada fase produce archivos concretos dentro de `00. Planeacion\` del proyecto. Hasta la fase 6 todo se escribe en una
-carpeta temporal de planeación; en la fase 6 se crea la estructura definitiva y se mueve ahí. Si el usuario ya tiene
-una carpeta para el proyecto, use esa desde el inicio.
+Cada fase produce archivos concretos dentro de `00. Planeacion\` del proyecto, y esa carpeta vive desde la fase 1 en la
+carpeta definitiva del proyecto: no hay carpeta temporal ni mudanza después (las rutas de las fichas dependen de eso).
+Si el usuario ya tiene una carpeta para el proyecto, use esa. Si no, la carpeta se llama como el producto; y si el
+producto todavía no tiene nombre, la lente 10 de la investigación (nombre y dominio) va primero y da un nombre de
+trabajo (si después cambia, se renombra la carpeta y se anota en `DECISIONES.md`).
 
 ### Fase 1 — Entrevista (lea `references/entrevista.md`)
 
@@ -141,7 +144,11 @@ ventas → operación → código) y **adáptela a este proyecto, nunca la copie
 los «riesgos por verificar» de la visión; los módulos, de la sección de módulos; Ventas existe solo si hay quien venda;
 las etapas de código desaparecen si el producto no lleva código. Cada etapa lleva su «por qué importa» escrito para
 alguien que no sabe nada, su «entra cuando», su «terminada cuando» verificable y sus skills con URL del catálogo.
-Escriba `00. Planeacion\07-vision-producto\hoja-de-ruta.json`, genere el HTML con
+Escriba `00. Planeacion\07-vision-producto\hoja-de-ruta.json` **completo, subetapa por subetapa**: además de carpeta,
+título y descripción, cada subetapa lleva `objetivo`, `terminada`, `vision`, `lee`, `skills`, `como` y `necesita` (el
+esquema está en la referencia). Son los textos de las fichas: con ellos en el JSON, el script de la fase 6 escribe las
+60 fichas solas; sin ellos, toca llenar 60 archivos a mano. Si son muchas subetapas, escriba el JSON etapa por etapa
+(un agente en serie por etapa, que recibe la visión y la etapa base). Genere el HTML con
 `node assets/guardar/scripts/generar_hoja_de_ruta.mjs` y pídale al usuario que lo apruebe igual que la visión.
 
 ### Fase 6 — Crear la estructura del proyecto (lea `references/estructura-proyecto.md`)
@@ -154,15 +161,17 @@ Con la hoja de ruta aprobada:
    node "<ruta-de-esta-skill>/scripts/crear_estructura.mjs" --raiz "<carpeta del proyecto>" --proyecto proyecto.json
    ```
    El script crea todas las carpetas de la hoja de ruta, un `ESTADO.md` y un `LEEME.md` por etapa y un `LEEME.md` por
-   subetapa (esqueletos con todas las secciones ya puestas), el `ESTADO.md`, `DECISIONES.md`, `CHANGELOG.md`,
+   subetapa (las fichas, llenas con los campos del JSON), el `ESTADO.md`, `DECISIONES.md`, `CHANGELOG.md`,
    `README.md`, `.gitignore` y `.gitattributes` de la raíz, el `CLAUDE.md` desde la plantilla, `99. Archivo\LEEME.md`, y
-   copia la skill `/guardar` con sus scripts a `.claude\skills\guardar\`. No pisa nada que ya exista.
-2. Llene lo que el script dejó marcado con `<<…>>`: el `CLAUDE.md` (qué es el proyecto, roles, decisiones fijas,
-   seguridad, mapa), el `ESTADO.md` raíz (dónde estamos, siguiente paso exacto: la primera subetapa de la etapa 01),
+   copia la skill `/guardar` con sus scripts a `.claude\skills\guardar\`. No pisa nada que ya exista. En
+   `proyecto.json`, `personas[].nombre` va como se quiere leer en una frase («la Ingeniera», «el Profe», «Juanjo»),
+   `graba` es `"graba"`, `"ensena"` o `"no"`, y `repo` se deja fuera hasta que exista en GitHub (el script escribe «por
+   crear con el OK de …»).
+2. Llene lo que el script dejó marcado con `<<…>>`: el `CLAUDE.md` (qué es el proyecto, decisiones fijas, seguridad,
+   mapa), el `ESTADO.md` raíz (dónde estamos, siguiente paso exacto: la primera subetapa de la etapa 01),
    `DECISIONES.md` (todas las decisiones de la planeación, numeradas, con fecha y porqué, incluidas las del Consejo
-   que se aceptaron o rechazaron) y las fichas. Las fichas de subetapa se enriquecen etapa por etapa, con un agente en
-   serie por etapa si son muchas: objetivo, qué se entrega, terminada cuando, qué lee Claude para arrancar, skills con
-   URL, cómo se trabaja, qué necesita del responsable.
+   que se aceptaron o rechazaron) y las pocas marcas que queden en las fichas. Si quedan muchas, complete los campos
+   en el JSON, borre esas fichas y vuelva a correr el script: es más barato que editar 60 archivos.
 3. Mueva los archivos de la planeación (entrevista, investigación, acta, visión, hoja de ruta, catálogo) a sus carpetas
    de `00. Planeacion\` si no estaban ya ahí, y marque esa etapa como terminada (es referencia).
 4. Verifique: `node .claude/skills/guardar/scripts/verificar_fichas.mjs` → **FICHAS: LIMPIAS**;
@@ -174,15 +183,24 @@ Con la hoja de ruta aprobada:
 
 Explique en dos líneas qué es un repositorio y por qué todo el proyecto va a vivir ahí (historial completo, nada se
 pierde si falla el disco, cualquiera que entre después ve cómo se hizo todo). Luego, **con el OK del usuario**:
-`git init` en la raíz, rama `develop` (trabajo diario) y `main` (producción), repositorio **privado** con
-`gh repo create <nombre> --private --source . --remote origin`, y el primer `/guardar` (que hace `git add -A`, corre
-`revisar_secretos.mjs`, commit impersonal y `push -u origin develop`). Si no hay `gh` o el usuario prefiere hacerlo
-después, deje el repositorio local listo y anótelo en «Bloqueos y avisos» del `ESTADO.md`.
+`git init -b develop` en la raíz (rama `develop` = trabajo diario; `main` = producción, nace en el primer paso a
+producción), repositorio **privado** con `gh repo create <nombre> --private --source . --remote origin`, y el primer
+`/guardar` (que hace `git add -A`, corre `revisar_secretos.mjs`, commit impersonal y `push -u origin develop`).
+
+- Si `preparar.mjs` avisó que Git no tiene nombre y correo y el usuario no está para darlos, fíjelos solo en este
+  repositorio (`git config user.name` / `user.email`, sin `--global`) con el nombre del proyecto y un correo de
+  relleno, y anótelo en «Bloqueos y avisos» para que el usuario los cambie.
+- Si avisó que la carpeta está dentro de otro repositorio git, no haga `git init` sin decírselo al usuario: un
+  repositorio anidado confunde al de afuera. Lo normal es que el proyecto viva en su propia carpeta.
+- Si no hay `gh`, no hay OK para GitHub o el usuario prefiere hacerlo después: deje el repositorio local con su commit
+  (`/guardar sin subir`) y anótelo en «Bloqueos y avisos» del `ESTADO.md`; `cambios_sesion.mjs --inicio` lo va a
+  recordar en cada chat hasta que exista el remoto.
 
 ### Fase 8 — Cierre y entrega
 
-Corra `/guardar` (la skill ya instalada en el proyecto) para que el `ESTADO.md` quede con la fecha de hoy y el
-siguiente paso exacto, y cierre con un mensaje de entrega para el usuario, sin jerga:
+Corra `/guardar` (la skill ya instalada en el proyecto; «sin subir» si no hay repositorio en GitHub todavía) para que
+el `ESTADO.md` quede con la fecha de hoy y el siguiente paso exacto, y cierre con un mensaje de entrega para el usuario,
+sin jerga:
 
 - Qué quedó en la carpeta (en 5 líneas: visión, hoja de ruta, investigación, decisiones, fichas) y el enlace del
   repositorio.

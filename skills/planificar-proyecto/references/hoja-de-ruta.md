@@ -29,8 +29,20 @@ y un «terminada cuando» (un resultado verificable, nunca una fecha). Cada sube
       "entra": "qué tiene que existir antes",
       "terminada": "resultado verificable",
       "como": ["cómo se trabaja en esta etapa", "…"],
+      "vision": "§3 roles y §6 módulos (las secciones de la visión que esta etapa usa)",
       "subetapas": [
-        {"carpeta": "01-cuentas-y-accesos", "titulo": "Cuentas y accesos", "descripcion": "qué se entrega, con detalle", "entra": "…"}
+        {
+          "carpeta": "01-cuentas-y-accesos", "titulo": "Cuentas y accesos",
+          "descripcion": "qué se entrega, con detalle",
+          "entra": "qué tiene que existir antes",
+          "objetivo": "una frase: qué queda resuelto al terminar",
+          "terminada": "criterio verificable: qué archivo, pantalla o prueba existe",
+          "vision": "§… (secciones de la visión que esta subetapa usa)",
+          "lee": ["`00. Planeacion/02-investigacion/legal-<pais>.md`", "«flujos.md» de la subetapa 03/02 (cuando exista)"],
+          "skills": [{"nombre": "…", "url": "https://…"}],
+          "como": ["paso 1 del ciclo aplicado a esta subetapa", "…"],
+          "necesita": ["la contraseña de X la escribe la persona", "…"]
+        }
       ],
       "skills": [{"nombre": "…", "url": "https://…"}]
     }
@@ -43,7 +55,13 @@ y un «terminada cuando» (un resultado verificable, nunca una fecha). Cada sube
 - `personas` alimenta el `CLAUDE.md` (roles) y el verificador de fichas (las atribuciones «<nombre> dijo» se bloquean).
 - `carpeta_codigo` dice qué carpeta se mira con git y no por fecha de archivo; si el producto no lleva código, se omite.
 - `skills` solo con URL comprobada (fase 2, lente 8) y presente en el catálogo; `verificar_fichas.mjs` rechaza URLs de
-  GitHub que no estén ni en el JSON ni en el catálogo.
+  GitHub que no estén ni en el JSON ni en el catálogo. Las `skills` de una subetapa son el subconjunto que usa; si la
+  subetapa no trae `skills`, hereda todas las de la etapa (y la ficha queda larga: mejor ponerlas).
+- **Los campos por subetapa `objetivo`, `terminada`, `vision`, `lee`, `skills`, `como` y `necesita` alimentan la
+  ficha** (`LEEME.md`) que `crear_estructura.mjs` escribe: con ellos completos, el script deja las fichas listas y casi
+  sin marcas `<<…>>`. Sin ellos, cada ficha queda con 5-6 marcas y hay que llenar 60 archivos a mano. Por eso la hoja
+  de ruta se escribe completa en la fase 5, subetapa por subetapa, antes de crear la estructura. En `lee`, lo que ya
+  existe va entre acentos graves y lo que todavía no existe entre «comillas angulares» (regla 8 de escritura).
 
 ## Las etapas base y cómo se adaptan
 
@@ -72,7 +90,8 @@ Si el producto **no lleva código** (un curso, una comunidad, una plantilla), se
 
 Si se quita una etapa, **no se renumeran las demás**: los números fijan el orden de construcción y las referencias
 cruzadas (`07/03`) tienen que seguir valiendo. La etapa ausente se anota en la tabla del `ESTADO.md` raíz como
-«no aplica: <por qué>».
+«no aplica: <por qué>». Tampoco se renumera cuando el orden real difiere un poco del base (p. ej. la landing para
+vender a terceros va después del piloto, no antes): el orden lo fija el «entra cuando» de cada etapa, no el número.
 
 ## El «por qué importa» de cada etapa
 

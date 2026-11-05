@@ -15,7 +15,12 @@ usuario manda): avisa de límites de mercado, legales y técnicos antes de que c
   real sobre esto» vale más que uno que la inventa.
 - **Sin suavizar**: si la evidencia es mala para la idea, se escribe así. El Consejo necesita la verdad.
 - **Presupuesto**: en serie por defecto; en paralelo solo si el usuario lo pidió y su plan lo aguanta; nunca más de 10
-  agentes en total (lentes + verificación). Con plan Pro: 4-6 lentes en serie, 20 búsquedas por agente como tope.
+  agentes en total (lentes + verificación). Con plan Pro: 4-6 lentes en serie, 20 búsquedas por agente como tope. Si
+  caben menos agentes que lentes, **se fusionan** (abajo, «Cuando el presupuesto no alcanza»): nunca se omite una
+  lente que aplica sin decir en qué reporte quedó cubierta.
+- **Escribir por partes**: cada agente crea el archivo con el encabezado y el «Resumen para decidir» en cuanto tiene
+  algo, y va agregando secciones. Si la corrida se corta (límite de uso, red), lo escrito queda y el agente siguiente
+  retoma desde la última sección en vez de repetir todo.
 - **Nada de datos de personas**: ninguna cita con nombre completo de una persona particular; los foros se citan por
   el hilo, no por la persona.
 - Cada agente recibe el perfil del usuario (nivel, país, presupuesto) y la idea tal como se contó; nunca recibe la
@@ -38,6 +43,27 @@ usuario manda): avisa de límites de mercado, legales y técnicos antes de que c
 
 Lentes que no aplican: se anotan en el `LEEME.md` de `02-investigacion\` como «no se corrió: <por qué>».
 
+### Cuando el presupuesto no alcanza (fusión de lentes)
+
+Un agente puede cubrir dos o tres lentes vecinas y escribir un archivo por lente (o uno solo con una sección por
+lente, nombrado por la primera). Reparto recomendado:
+
+| Agentes disponibles | Reparto |
+|---|---|
+| 6 o más | una lente por agente, empezando por 1, 2, 5, 7, 3, 4; luego 6, 9 |
+| 4 | A = 1 + 3 (competencia, precios y disposición a pagar) · B = 2 + 4 + 9 (conversación real, tamaño, fracasos) · C = 5 + 6 (legal y pagos del país) · D = 7 (técnica) |
+| 3 | A = 1 + 3 + 4 · B = 2 + 5 + 6 · C = 7 |
+| 2 | A = 1 + 2 + 3 + 4 + 9 · B = 5 + 6 + 7 |
+| 1 | todo en un reporte por secciones, con el tope de búsquedas repartido |
+
+La lente 8 (herramientas) no necesita agente: el catálogo nace de las skills de `assets/hoja-de-ruta-base.json` y de
+las que la lente técnica recomiende, y cada URL se comprueba con `verificar_urls_github.mjs` al crear la estructura.
+La lente 10 (nombre) tampoco: tres o cuatro candidatos se comprueban a mano con `nslookup <dominio>` (si responde,
+está tomado) y con el buscador de marcas del país. **Si no hay nombre, la lente 10 va primero**, antes que las demás,
+porque la carpeta del proyecto se crea con ese nombre desde la fase 1 (puede ser un nombre de trabajo; si después
+cambia, se renombra la carpeta y se anota en `DECISIONES.md`). El verificador adversarial sí es un agente aparte,
+siempre; si solo cabe uno, se recorta a 3 afirmaciones.
+
 ### Prompt base (se adapta a cada lente)
 
 ```
@@ -51,7 +77,9 @@ Reglas: cada cifra con URL y fecha de lectura; fuente primaria antes que secunda
 «Vacíos»; sin suavizar; máximo <N> búsquedas; no copie textos largos de las fuentes (una cita de ≤15 palabras por fuente,
 entre comillas y con atribución); ninguna cita con nombre de una persona particular.
 
-Escriba el reporte en <ruta del archivo>, en <idioma>, con esta estructura exacta:
+Escriba el reporte en <ruta del archivo>, en <idioma>, con esta estructura exacta. Cree el archivo con el encabezado y el
+«Resumen para decidir» en cuanto tenga los primeros hallazgos y agregue las secciones conforme avance (si la corrida
+se corta, lo escrito tiene que servir para retomar):
 
 # <Lente> — <nombre del proyecto>
 Fecha: <hoy> · Búsquedas: <n> · Fuentes primarias: <n>
@@ -115,7 +143,8 @@ contra, revise si la fuente original dice lo que el reporte dice, compruebe fech
 CONFIRMADA (se sostiene tal cual) · CORREGIDA (se sostiene con cambios; escriba la versión correcta) · REFUTADA (no se
 sostiene; diga qué es cierto). Para cada veredicto: versión correcta, evidencia (fuentes con fecha), e impacto en el
 proyecto (qué cambia de la idea, del precio, del alcance o de la técnica). Máximo <N> búsquedas. Escriba en
-<02-investigacion\_verificaciones.md>.
+<02-investigacion\_verificaciones.md>: primero el encabezado con las 5 afirmaciones, y cada veredicto se agrega al
+archivo apenas esté (no espere a tener los cinco).
 ```
 
 Formato del archivo:

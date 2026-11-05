@@ -43,6 +43,17 @@ else {
   if (!nombreOk || !nombre || !correoOk || !correo) {
     console.log("  · Git no tiene nombre y correo configurados; hacen falta para el primer guardado:");
     console.log('    git config --global user.name "Su Nombre"   ·   git config --global user.email "su@correo.com"');
+    console.log("    Si la persona no está para darlos, se fijan solo en el repositorio del proyecto (sin --global) con el nombre");
+    console.log("    del proyecto y un correo de relleno, y se anota en «Bloqueos y avisos» del ESTADO.md para que los cambie.");
+  }
+  // Repositorio anidado: si la carpeta (o la más cercana que exista) ya está dentro de un repositorio git, avisar.
+  let existente = raiz;
+  while (!fs.existsSync(existente) && path.dirname(existente) !== existente) existente = path.dirname(existente);
+  const [topOk, top] = corre("git", ["-C", existente, "rev-parse", "--show-toplevel"]);
+  if (topOk && top && path.resolve(top) !== raiz) {
+    console.log(`  · AVISO: esta carpeta está dentro de otro repositorio git (${path.resolve(top)}). Un git init aquí crea un`);
+    console.log("    repositorio anidado que el de afuera ve como carpeta sin rastrear. Mejor planificar fuera de ese repositorio,");
+    console.log("    o decidirlo con la persona y anotarlo en «Bloqueos y avisos».");
   }
 }
 
@@ -68,6 +79,8 @@ if (fs.existsSync(estado) && fs.existsSync(hoja)) {
 } else if (fs.existsSync(estado) || fs.existsSync(claude) || fs.existsSync(path.join(raiz, "00. Planeacion"))) {
   console.log("Esta carpeta tiene una planeación A MEDIAS (hay ESTADO.md, CLAUDE.md o 00. Planeacion, pero no la hoja de ruta).");
   console.log("Retome desde la fase que falte; no cree una segunda planeación.");
+} else if (!fs.existsSync(raiz)) {
+  console.log("La carpeta no existe todavía: se crea al escribir el primer archivo (lista para un proyecto nuevo).");
 } else {
   let vacia = true;
   try { vacia = fs.readdirSync(raiz).filter((n) => !n.startsWith(".")).length === 0; } catch { }

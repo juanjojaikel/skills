@@ -1,6 +1,6 @@
 ---
 name: guardar
-description: Guarda TODO lo trabajado en la sesión del proyecto {{PROYECTO}} para que el próximo chat arranque sabiendo qué se hizo, qué quedó a medias, qué está pendiente y cuál es el siguiente paso exacto, y lo sube a GitHub. Actualiza el ESTADO.md del proyecto y de cada etapa tocada, el LEEME (ficha) de cada subetapa con archivos y skills nuevas, DECISIONES.md, CHANGELOG.md si algo pasó a producción y, solo si cambió una regla fija, el CLAUDE.md; verifica rutas y archivos sin registrar; revisa secretos; hace commit (impersonal, sin Co-Authored-By) y push a develop. Úsela cuando la persona diga «guardar», «/guardar», «guarde todo», «guarde el avance», «actualice el estado», «cierre la bitácora», «cerremos», «terminamos por hoy», al terminar una subetapa, o al cerrar cualquier tarea significativa aunque no lo pida.
+description: Guarda TODO lo trabajado en la sesión del proyecto {{PROYECTO}} para que el próximo chat arranque sabiendo qué se hizo, qué quedó a medias, qué está pendiente y cuál es el siguiente paso exacto, y lo sube a GitHub. Actualiza el ESTADO.md del proyecto y de cada etapa tocada, el LEEME (ficha) de cada subetapa con archivos y skills nuevas, DECISIONES.md, CHANGELOG.md si algo pasó a producción y, solo si cambió una regla fija, el CLAUDE.md; verifica rutas y archivos sin registrar; revisa secretos; hace commit (impersonal, sin Co-Authored-By) y push a develop. Úsela cuando la persona diga «guardar», «/guardar», «guarde todo», «guarde el avance», «actualice el estado», «cierre la bitácora», «cerremos», «terminamos por hoy», al terminar una subetapa, o al cerrar cualquier tarea significativa aunque no lo pida. «Guardar sin subir» hace lo mismo pero deja solo el commit local (sin GitHub).
 ---
 
 # /guardar — memoria de trabajo del proyecto + GitHub
@@ -106,10 +106,17 @@ el CLAUDE.md no repite nada del estado (solo lo importa con `@ESTADO.md`).
 3. Guarde el ESTADO.md raíz AL FINAL de todo, para que su fecha quede más nueva que la de los demás archivos.
 4. Lea de corrido el ESTADO.md raíz como si fuera un chat nuevo sin memoria: ¿se entiende qué sigue sin preguntar nada?
 
-### 8. Subir a GitHub (siempre)
-1. Si el proyecto no es un repositorio todavía: `git -C "<raiz>" init -b develop`. Si no hay remoto y hay `gh` con sesión:
+### 8. Subir a GitHub (siempre, salvo «guardar sin subir»)
+**Modo «sin subir»**: si la persona dice «guardar sin subir», si no hay remoto todavía y no hay OK para crearlo, o si
+no hay red, se hacen los pasos 1 (solo el `git init`), 2, 3, 4 y 5 (queda el commit local) y se salta el resto; se
+anota en «Bloqueos y avisos» del `ESTADO.md` («commit local `abc1234` sin subir: falta <el remoto / el OK / la
+red>») y se reporta así. El siguiente `--inicio` lo va a recordar.
+1. Si el proyecto no es un repositorio todavía: `git -C "<raiz>" init -b develop`. Si Git no tiene nombre y correo
+   (`git config user.name` vacío) y la persona no está para darlos: `git -C "<raiz>" config user.name "<nombre del
+   proyecto>"` y `user.email "<proyecto>@example.invalid"` (solo en este repositorio) y se anota en «Bloqueos y
+   avisos» para que los cambie. Si no hay remoto y hay `gh` con sesión:
    `gh repo create <nombre-del-proyecto> --private --source "<raiz>" --remote origin` (con el OK de la persona la
-   primera vez; después no se pregunta). Sin `gh`: se deja local y se anota en «Bloqueos y avisos».
+   primera vez; después no se pregunta). Sin `gh` o sin OK: modo «sin subir».
 2. Confirme la rama: `git -C "<raiz>" branch --show-current` debe decir `develop`. Si dice `main` o nada:
    `git -C "<raiz>" rev-parse --verify develop` → si no existe, `git -C "<raiz>" switch -c develop`; si existe,
    `git -C "<raiz>" switch develop`. (`main` solo recibe merges desde `develop`.)

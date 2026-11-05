@@ -25,7 +25,7 @@
 |---|---|---|---|
 {{PERSONAS_TABLA}}
 
-Regla de fondo: **{{USUARIO}} valida; Claude hace el trabajo.** Nunca se le pide a una persona algo que Claude pueda
+Regla de fondo: **{{USUARIO}} {{VALIDA}}; Claude hace el trabajo.** Nunca se le pide a una persona algo que Claude pueda
 averiguar o hacer solo; se le pide solo lo que exige su criterio, su firma, su contraseña o su tarjeta.
 
 ## Protocolo de cada chat (OBLIGATORIO)
@@ -49,7 +49,8 @@ Nunca copia mensajes de arranque ni dice qué archivo leer: eso lo resuelve Clau
    Stripe, Trail of Bits, Microsoft, Vercel…), esa. Antes de instalar una skill o repositorio nuevo: revisar su código
    (secretos, descargas, telemetría), instalarla y anotarla en el catálogo con su URL.
 6. **Al cerrar** la subetapa, o cuando la persona diga «guardar», «cerremos», «terminamos por hoy»: **/guardar**
-   (`.claude/skills/guardar/SKILL.md`). Termina con commit y push a GitHub.
+   (`.claude/skills/guardar/SKILL.md`). Termina con commit y push a GitHub («guardar sin subir» deja solo el commit
+   local, para cuando todavía no hay repositorio en GitHub o no hay red).
 7. «Sigamos» / «continúe» / «¿con qué seguimos?» sin más = el «Siguiente paso exacto» de `ESTADO.md`.
 8. **Sin fechas ni atrasos.** El proyecto no tiene calendario: ninguna etapa «tenía que» estar lista en una fecha y
    nunca se dice «vamos atrasados». Cada etapa termina cuando su resultado existe y se verificó. Las únicas fechas que
@@ -89,7 +90,7 @@ consentimiento. 5. Todo lo que se pueda automatizar, se automatiza. …>>
 
 ## GitHub (todo el proyecto, siempre)
 
-- Repositorio **privado** `{{REPO}}`; la raíz del repositorio es esta carpeta. Todo lo que se produce (etapas, notas,
+- Repositorio **privado** {{REPO}}; la raíz del repositorio es esta carpeta. Todo lo que se produce (etapas, notas,
   decisiones, investigación, código) vive ahí, para que cualquiera que entre después vea cómo se hizo todo.
 - Ramas: **`develop`** = trabajo diario; **`main`** = producción. Nunca se trabaja directo en `main`.
 - **Pasar a producción** = merge `develop` → `main` + etiqueta `vX.Y.Z` + entrada en `CHANGELOG.md` (qué entró, cuándo,

@@ -42,8 +42,11 @@ todavía no sé?
 ➡️ Recomendado: suscripción mensual al cliente que paga, sin cobrar al usuario final; el precio se decide con la
 investigación, no hoy.
 
-**P6 - Quién más está.** ¿Está solo o con socios? ¿Quién hace qué (construir, vender, operar) y cómo se reparten?
-*Para qué:* define los roles del `CLAUDE.md`, si existe la etapa de Ventas y si hace falta una página de sociedad.
+**P6 - Quién más está.** ¿Está solo o con socios? ¿Quién hace qué (construir, vender, operar) y cómo se reparten? ¿Cómo
+quiere que se les nombre en los registros (nombre, apodo o rol)?
+*Para qué:* define los roles del `CLAUDE.md`, si existe la etapa de Ventas y si hace falta una página de sociedad. El
+nombre va tal cual a `proyecto.json` (`personas[].nombre`) y de ahí a frases como «<nombre> valida» y «De <nombre>:»;
+si es un rol, con artículo («la Ingeniera», «el Profe», «la dueña»), nunca «Ingeniera» a secas.
 ➡️ Recomendado: si hay socios, una página de sociedad firmada antes de que exista código (va en la etapa 01).
 
 **P7 - Qué existe ya.** ¿Nombre, dominio, redes, cuentas (GitHub, hosting, pasarela de pagos), diseño, código,
@@ -57,8 +60,9 @@ libre.
 ➡️ Recomendado: con menos de 10 horas por semana se planifica un MVP más chico; con plan Pro de Claude los agentes van en
 serie y de a pocos.
 
-**P9 - Grabar o enseñar.** ¿Va a grabar el proceso o enseñárselo a alguien? *Para qué:* si sí, cada chat arranca con un
-«guion de arranque» que explica por qué importa la etapa, pensado para leerse en cámara.
+**P9 - Grabar o enseñar.** ¿Va a grabar el proceso, enseñárselo a alguien, o ninguna de las dos? *Para qué:* si sí, cada
+chat arranca con un «guion de arranque» que explica por qué importa la etapa, pensado para leerse en cámara (graba) o
+para que otra persona lo siga (enseña). En `proyecto.json` va `graba: "graba"`, `"ensena"` o `"no"`.
 ➡️ Recomendado: sí; el guion no estorba y deja el proyecto entendible para cualquiera que entre después.
 
 **P10 - Cómo quiere que le hable.** ¿Usted o vos/tú? ¿Español neutro o el de su país? ¿Hay palabras del oficio que

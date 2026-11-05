@@ -35,9 +35,13 @@ const COAUTH = /co-authored/i;
 
 function atribuciones() {
   const nombres = personas().map((n) => n.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"));
-  const verbos = "(?:hizo|escribi[oó]|propuso|cre[oó]|decidi[oó]|sugiri[oó]|pens[oó]|redact[oó]|dijo|pidi[oó]|quiere|prefiere|mencion[oó]|confirm[oó]|said|decided|asked|wants|wrote|disse|decidiu|pediu)";
-  const partes = [`\\bclaude ${verbos}\\b`];
-  if (nombres.length) partes.push(`\\b(?:${nombres.join("|")}) ${verbos}\\b`, `\\bseg[uú]n (?:${nombres.join("|")})\\b`);
+  // Para Claude se bloquea cualquier verbo de acción (los registros nunca dicen «Claude hizo»). Para las personas, solo
+  // los verbos de habla y decisión en pasado («dijo», «pidió», «decidió»): «la dueña quiere» o «la dueña valida» son
+  // frases normales de una ficha, no una atribución narrativa.
+  const verbosClaude = "(?:hizo|escribi[oó]|propuso|cre[oó]|decidi[oó]|sugiri[oó]|pens[oó]|redact[oó]|dijo|pidi[oó]|mencion[oó]|confirm[oó]|said|decided|asked|wrote|disse|decidiu|pediu)";
+  const verbosPersona = "(?:dijo|pidi[oó]|decidi[oó]|mencion[oó]|confirm[oó]|propuso|sugiri[oó]|said|decided|asked|disse|decidiu|pediu)";
+  const partes = [`\\bclaude ${verbosClaude}\\b`];
+  if (nombres.length) partes.push(`\\b(?:${nombres.join("|")}) ${verbosPersona}\\b`, `\\bseg[uú]n (?:${nombres.join("|")})\\b`);
   return new RegExp(partes.join("|"), "i");
 }
 
@@ -65,7 +69,7 @@ function revisarArchivo(p, permitidas, esSubetapa, rxAtrib) {
       if (!permitidas.has(u3) && !(esRaiz && reposPermitidos.has(u3))) problemas.push(`URL de skill que no está en hoja-de-ruta.json ni en el catálogo: ${u2}`);
     } else avisos.push(`URL externa (no es skill; confirmar que es necesaria): ${u2}`);
   }
-  for (const r of rutasRotasEn(texto, p)) problemas.push(`ruta entre acentos graves que no existe: \`${r}\``);
+  for (const r of rutasRotasEn(texto, p)) problemas.push(`ruta entre acentos graves que no existe: \`${r}\` (si es un entregable futuro, escríbalo entre «comillas angulares»; los acentos graves son solo para lo que ya existe)`);
   const lineas = texto.split("\n");
   lineas.forEach((l, i0) => {
     const i = i0 + 1;
