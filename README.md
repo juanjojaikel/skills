@@ -12,13 +12,13 @@ instrucciones (`SKILL.md`), sus referencias, plantillas y scripts.
 **Opción 1 — con el instalador de skills** (recomendada; hace falta Node, que Claude Code ya trae):
 
 ```bash
-npx skills add juanjojaikel-cmd/skills
+npx skills add juanjojaikel/skills
 ```
 
 **Opción 2 — como plugin de Claude Code** (dentro de Claude Code):
 
 ```
-/plugin marketplace add juanjojaikel-cmd/skills
+/plugin marketplace add juanjojaikel/skills
 /plugin install planificar-proyecto@juanjojaikel
 ```
 
